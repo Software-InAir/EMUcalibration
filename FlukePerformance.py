@@ -421,7 +421,7 @@ class DCVoltageVerification(QDialog):
         self.textSpacer = QSpacerItem(0, 30)
         self.contentLayout.addItem(self.textSpacer)
 
-        self.actionLabel = QLabel("Proceed by selecting 'Measure'.")
+        self.actionLabel = QLabel("Proceed by selecting 'Measure' to collect data.")
         self.actionLabel.setStyleSheet("""
                                             font-size: 18px;
                                             font-weight: bold;
@@ -465,7 +465,7 @@ class DCVoltageVerification(QDialog):
             self.dc_1_reading = float(my_instrument.read().strip())
 
             run["dc_200mv_short_slow_v"] = self.dc_1_reading
-            if -3e6 <= self.dc_1_reading <= 3e-6:
+            if -3e-6 <= self.dc_1_reading <= 3e-6:
                 run["dc_200mv_short_slow_v_result"] = "PASS"
             else:
                 run["dc_200mv_short_slow_v_result"] = "FAIL"
@@ -484,10 +484,12 @@ class DCVoltageVerification(QDialog):
             my_instrument.write("F1R1D1S2T0Y0B0?")
             my_instrument.read()
             my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
             self.dc_1_reading = float(my_instrument.read().strip())
 
             run["dc_200mv_short_fast_v"] = self.dc_1_reading
-            if -3e6 <= self.dc_1_reading <= 3e-6:
+            if -3e-6 <= self.dc_1_reading <= 3e-6:
                 run["dc_200mv_short_fast_v_result"] = "PASS"
             else:
                 run["dc_200mv_short_fast_v_result"] = "FAIL"
@@ -499,7 +501,7 @@ class DCVoltageVerification(QDialog):
             self.dc_2_reading = float(my_instrument.read().strip())
 
             run["dc_2v_short_slow_v"] = self.dc_2_reading
-            if -30e6 <= self.dc_2_reading <= 30e-6:
+            if -30e-6 <= self.dc_2_reading <= 30e-6:
                 run["dc_2v_short_slow_v_result"] = "PASS"
             else:
                 run["dc_2v_short_slow_v_result"] = "FAIL"
@@ -508,21 +510,1071 @@ class DCVoltageVerification(QDialog):
             self.dc_2_reading = float(my_instrument.read().strip())
 
             run["dc_2v_short_medium_v"] = self.dc_2_reading
-            if -50e6 <= self.dc_2_reading <= 50e-6:
+            if -50e-6 <= self.dc_2_reading <= 50e-6:
                 run["dc_2v_short_medium_v_result"] = "PASS"
             else:
                 run["dc_2v_short_medium_v_result"] = "FAIL"
 
-            my_instrument.write("F1R1D1S2T0Y0B0?")
+            my_instrument.write("F1R2D1S2T0Y0B0?")
             my_instrument.read()
+            my_instrument.write("D0?")
+
             self.dc_2_reading = float(my_instrument.read().strip())
 
             run["dc_2v_short_fast_v"] = self.dc_2_reading
-            if -200e6 <= self.dc_2_reading <= 200e-6:
+            if -200e-6 <= self.dc_2_reading <= 200e-6:
                 run["dc_2v_short_fast_v_result"] = "PASS"
             else:
                 run["dc_2v_short_fast_v_result"] = "FAIL"
 
+#-------------------------------------------------------- Shorted 20 V range
+
+            my_instrument.write("F1R3S0T0Y0B0?")
+            my_instrument.read()
+            self.dc_3_reading = float(my_instrument.read().strip())
+
+            run["dc_20v_short_slow_v"] = self.dc_3_reading
+            if -3e-4 <= self.dc_3_reading <= 3e-4:
+                run["dc_20v_short_slow_v_result"] = "PASS"
+            else:
+                run["dc_20v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R3S1T0Y0B0?")
+            self.dc_3_reading = float(my_instrument.read().strip())
+
+            run["dc_20v_short_medium_v"] = self.dc_3_reading
+            if -5e-4 <= self.dc_2_reading <= 5e-4:
+                run["dc_20v_short_medium_v_result"] = "PASS"
+            else:
+                run["dc_20v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R3D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("D0?")
+
+            self.dc_3_reading = float(my_instrument.read().strip())
+
+            run["dc_20v_short_fast_v"] = self.dc_3_reading
+            if -2e-3 <= self.dc_3_reading <= 2e-3:
+                run["dc_20v_short_fast_v_result"] = "PASS"
+            else:
+                run["dc_20v_short_fast_v_result"] = "FAIL"
+
+#-------------------------------------------------------- Shorted 200 V range
+
+            my_instrument.write("F1R4S0T0Y0B0?")
+            my_instrument.read()
+            self.dc_4_reading = float(my_instrument.read().strip())
+
+            run["dc_200v_short_slow_v"] = self.dc_4_reading
+            if -3e-3 <= self.dc_3_reading <= 3e-3:
+                run["dc_200v_short_slow_v_result"] = "PASS"
+            else:
+                run["dc_200v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R4S1T0Y0B0?")
+            self.dc_4_reading = float(my_instrument.read().strip())
+
+            run["dc_200v_short_medium_v"] = self.dc_4_reading
+            if -5e-3 <= self.dc_4_reading <= 5e-3:
+                run["dc_200v_short_medium_v_result"] = "PASS"
+            else:
+                run["dc_200v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R4D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("D0?")
+
+            self.dc_4_reading = float(my_instrument.read().strip())
+
+            run["dc_200v_short_fast_v"] = self.dc_4_reading
+            if -2e-2 <= self.dc_4_reading <= 2e-2:
+                run["dc_200v_short_fast_v_result"] = "PASS"
+            else:
+                run["dc_200v_short_fast_v_result"] = "FAIL"
+
+#-------------------------------------------------------- Shorted 1000 V range
+
+            my_instrument.write("F1R5S0T0Y0B0?")
+            my_instrument.read()
+            self.dc_5_reading = float(my_instrument.read().strip())
+
+            run["dc_1000v_short_slow_v"] = self.dc_5_reading
+            if -3e-2 <= self.dc_3_reading <= 3e-2:
+                run["dc_1000v_short_slow_v_result"] = "PASS"
+            else:
+                run["dc_1000v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R5S1T0Y0B0?")
+            self.dc_5_reading = float(my_instrument.read().strip())
+
+            run["dc_1000v_short_medium_v"] = self.dc_5_reading
+            if -5e-2 <= self.dc_5_reading <= 5e-2:
+                run["dc_1000v_short_medium_v_result"] = "PASS"
+            else:
+                run["dc_1000v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R5D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("D0?")
+
+            self.dc_5_reading = float(my_instrument.read().strip())
+
+            run["dc_1000v_short_fast_v"] = self.dc_5_reading
+            if -2e-1 <= self.dc_5_reading <= 2e-1:
+                run["dc_1000v_short_fast_v_result"] = "PASS"
+            else:
+                run["dc_1000v_short_fast_v_result"] = "FAIL"
+
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.mVDC100 = mVDC100()
+            self.mVDC100.exec()
+
+
+class mVDC100(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "100 mV DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Connect the HI and LO jacks of the calibrator output and Fluke 8840A input.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +100mV DC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.mvdc_1_reading = float(my_instrument.read().strip())
+
+            run["mvdc_100mv_short_slow_v"] = self.mvdc_1_reading
+            if 0.099989 <= self.mvdc_1_reading <= 0.100011:
+                run["mvdc_100mv_short_slow_v_result"] = "PASS"
+            else:
+                run["mvdc_100mv_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.mvdc_1_reading = float(my_instrument.read().strip())
+
+            run["mvdc_100mv_short_medium_v"] = self.mvdc_1_reading
+            if 0.099987 <= self.mvdc_1_reading <= 0.100013:
+                run["mvdc_100mv_short_medium_v_result"] = "PASS"
+            else:
+                run["mvdc_100mv_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.mvdc_1_reading = float(my_instrument.read().strip())
+
+            run["mvdc_100mv_short_fast_v"] = self.mvdc_1_reading
+            if 0.099970 <= self.mvdc_1_reading <= 0.100030:
+                run["mvdc_100mv_short_fast_v_result"] = "PASS"
+            else:
+                run["mvdc_100mv_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.OneVDC100 = OneVDC100()
+            OneVDC100.exec()
+
+class OneVDC100(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "+1V DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +1 V DC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_1_reading = float(my_instrument.read().strip())
+
+            run["vdc_1v_short_slow_v"] = self.vdc_1_reading
+            if 0.99993 <= self.vdc_1_reading <= 1.00007:
+                run["vdc_1v_short_slow_v_result"] = "PASS"
+            else:
+                run["vdc_1v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R2S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_1_reading = float(my_instrument.read().strip())
+
+            run["vdc_1v_short_medium_v"] = self.vdc_1_reading
+            if 0.99991 <= self.vdc_1_reading <= 1.00009:
+                run["vdc_1v_short_medium_v_result"] = "PASS"
+            else:
+                run["vdc_1v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R2D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.vdc_1_reading = float(my_instrument.read().strip())
+
+            run["vdc_1v_short_fast_v"] = self.vdc_1_reading
+            if 0.9997 <= self.vdc_1_reading <= 1.0003:
+                run["vdc_1v_short_fast_v_result"] = "PASS"
+            else:
+                run["vdc_1v_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.tenVDC = TenVDC100()
+            self.tenVDC.exec()
+
+
+class TenVDC100(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "+10V DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +10 V DC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R3S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_10_reading = float(my_instrument.read().strip())
+
+            run["vdc_10v_short_slow_v"] = self.vdc_10_reading
+            if 9.9992 <= self.vdc_10_reading <= 10.0008:
+                run["vdc_10v_short_slow_v_result"] = "PASS"
+            else:
+                run["vdc_10v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R3S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_10_reading = float(my_instrument.read().strip())
+
+            run["vdc_10v_short_medium_v"] = self.vdc_10_reading
+            if 9.9990 <= self.vdc_10_reading <= 10.0010:
+                run["vdc_10v_short_medium_v_result"] = "PASS"
+            else:
+                run["vdc_10v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R3D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.vdc_10_reading = float(my_instrument.read().strip())
+
+            run["vdc_10v_short_fast_v"] = self.vdc_10_reading
+            if 9.997 <= self.vdc_10_reading <= 1.003:
+                run["vdc_10v_short_fast_v_result"] = "PASS"
+            else:
+                run["vdc_10v_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R3S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.hundredVDC = HundredVDC()
+            self.hundredVDC.exec()
+
+class HundredVDC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "+100V DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +100 V DC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R4S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_100_reading = float(my_instrument.read().strip())
+
+            run["vdc_100v_short_slow_v"] = self.vdc_100_reading
+            if 99.992 <= self.vdc_100_reading <= 100.008:
+                run["vdc_100v_short_slow_v_result"] = "PASS"
+            else:
+                run["vdc_100v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R4S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_100_reading = float(my_instrument.read().strip())
+
+            run["vdc_100v_short_medium_v"] = self.vdc_100_reading
+            if 99.990 <= self.vdc_100_reading <= 100.010:
+                run["vdc_100v_short_medium_v_result"] = "PASS"
+            else:
+                run["vdc_100v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R4D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.vdc_100_reading = float(my_instrument.read().strip())
+
+            run["vdc_100v_short_fast_v"] = self.vdc_100_reading
+            if 99.97 <= self.vdc_100_reading <= 100.03:
+                run["vdc_100v_short_fast_v_result"] = "PASS"
+            else:
+                run["vdc_100v_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R4S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.thousandVDC = ThousandVDC()
+            self.thousandVDC.exec()
+
+class ThousandVDC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "+1000V DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +1000 VDC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R5S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_1000_reading = float(my_instrument.read().strip())
+
+            run["vdc_1000v_short_slow_v"] = self.vdc_1000_reading
+            if 999.92 <= self.vdc_1000_reading <= 1000.08:
+                run["vdc_1000v_short_slow_v_result"] = "PASS"
+            else:
+                run["vdc_1000v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R5S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_1000_reading = float(my_instrument.read().strip())
+
+            run["vdc_1000v_short_medium_v"] = self.vdc_1000_reading
+            if 999.90 <= self.vdc_1000_reading <= 1000.10:
+                run["vdc_1000v_short_medium_v_result"] = "PASS"
+            else:
+                run["vdc_1000v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R5D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.vdc_1000_reading = float(my_instrument.read().strip())
+
+            run["vdc_1000v_short_fast_v"] = self.vdc_1000_reading
+            if 999.7 <= self.vdc_1000_reading <= 1000.3:
+                run["vdc_1000v_short_fast_v_result"] = "PASS"
+            else:
+                run["vdc_1000v_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R5S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.negmVDC = NegmVDC100()
+            self.negmVDC.exec()
+
+
+class NegmVDC100(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "-100 mV DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with -100mV DC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+            #----------------- Somewhere in the future.. Someone will be like....
+            #..... Why in the f*#@ is the first one different than  the rest....
+            #...... And All I can tell you... is.... well.......
+            #... I was lazy on this day... And.. You should be lazy today as well..
+            #... Catch a breath...
+            #....... Unless the world is overrun by cyborgs....
+            #.... In that case?
+            #.................... God speed.....................................
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.mvdc_1_reading = float(my_instrument.read().strip())
+
+            run["negmvdc_100mv_short_slow_v"] = self.negmvdc_1_reading
+            if -0.100011 <= self.negmvdc_1_reading <= -0.099989:
+                run["negmvdc_100mv_short_slow_v_result"] = "PASS"
+            else:
+                run["negmvdc_100mv_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.negmvdc_1_reading = float(my_instrument.read().strip())
+
+            run["negmvdc_100mv_short_medium_v"] = self.negmvdc_1_reading
+            if -0.100013 <= self.negmvdc_1_reading <= -0.099987:
+                run["negmvdc_100mv_short_medium_v_result"] = "PASS"
+            else:
+                run["negmvdc_100mv_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.negmvdc_1_reading = float(my_instrument.read().strip())
+
+            run["negmvdc_100mv_short_fast_v"] = self.negmvdc_1_reading
+            if -0.100030 <= self.negmvdc_1_reading <= -0.099970:
+                run["negmvdc_100mv_short_fast_v_result"] = "PASS"
+            else:
+                run["negmvdc_100mv_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.negOneVDC100 = NegOneVDC100()
+            self.negOneVDC100.exec()
+
+class NegOneVDC100(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "-1V DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with -1 V DC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_1_reading = float(my_instrument.read().strip())
+
+            run["negvdc_1v_short_slow_v"] = self.negvdc_1_reading
+            if -0.99993 >= self.negvdc_1_reading >= -1.00007:
+                run["negvdc_1v_short_slow_v_result"] = "PASS"
+            else:
+                run["negvdc_1v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R2S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.negvdc_1_reading = float(my_instrument.read().strip())
+
+            run["negvdc_1v_short_medium_v"] = self.negvdc_1_reading
+            if -0.99991 >= self.negvdc_1_reading >= -1.00009:
+                run["negvdc_1v_short_medium_v_result"] = "PASS"
+            else:
+                run["negvdc_1v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R2D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.negvdc_1_reading = float(my_instrument.read().strip())
+
+            run["negvdc_1v_short_fast_v"] = self.negvdc_1_reading
+            if -0.9997 >= self.negvdc_1_reading >= -1.0003:
+                run["negvdc_1v_short_fast_v_result"] = "PASS"
+            else:
+                run["negvdc_1v_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.negTenVDC = NegTenVDC100()
+            self.negTenVDC.exec()
+
+
+class NegTenVDC100(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "-10V DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with -10 V DC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R3S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_10_reading = float(my_instrument.read().strip())
+
+            run["negvdc_10v_short_slow_v"] = self.negvdc_10_reading
+            if -9.9992 >= self.negvdc_10_reading >= -10.0008:
+                run["negvdc_10v_short_slow_v_result"] = "PASS"
+            else:
+                run["negvdc_10v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R3S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.negvdc_10_reading = float(my_instrument.read().strip())
+
+            run["negvdc_10v_short_medium_v"] = self.negvdc_10_reading
+            if -9.9990 >= self.negvdc_10_reading >= -10.0010:
+                run["negvdc_10v_short_medium_v_result"] = "PASS"
+            else:
+                run["negvdc_10v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R3D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.negvdc_10_reading = float(my_instrument.read().strip())
+
+            run["negvdc_10v_short_fast_v"] = self.negvdc_10_reading
+            if -9.997 >= self.negvdc_10_reading >= -1.003:
+                run["negvdc_10v_short_fast_v_result"] = "PASS"
+            else:
+                run["negvdc_10v_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R3S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.negHundredVDC = NegHundredVDC()
+            self.negHundredVDC.exec()
+
+class NegHundredVDC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "-100V DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with -100 V DC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R4S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.vdc_100_reading = float(my_instrument.read().strip())
+
+            run["negvdc_100v_short_slow_v"] = self.negvdc_100_reading
+            if -99.992 >= self.negvdc_100_reading >= -100.008:
+                run["negvdc_100v_short_slow_v_result"] = "PASS"
+            else:
+                run["negvdc_100v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R4S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.negvdc_100_reading = float(my_instrument.read().strip())
+
+            run["negvdc_100v_short_medium_v"] = self.negvdc_100_reading
+            if -99.990 >= self.negvdc_100_reading >= -100.010:
+                run["negvdc_100v_short_medium_v_result"] = "PASS"
+            else:
+                run["negvdc_100v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R4D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.negvdc_100_reading = float(my_instrument.read().strip())
+
+            run["negvdc_100v_short_fast_v"] = self.negvdc_100_reading
+            if -99.97 >= self.negvdc_100_reading >= -100.03:
+                run["negvdc_100v_short_fast_v_result"] = "PASS"
+            else:
+                run["negvdc_100v_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R4S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.negThousandVDC = NegThousandVDC()
+            self.negThousandVDC.exec()
+
+class NegThousandVDC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "-1000V DC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with -1000 VDC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R5S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.negvdc_1000_reading = float(my_instrument.read().strip())
+
+            run["negvdc_1000v_short_slow_v"] = self.negvdc_1000_reading
+            if -999.92 >= self.negvdc_1000_reading >= -1000.08:
+                run["negvdc_1000v_short_slow_v_result"] = "PASS"
+            else:
+                run["negvdc_1000v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R5S1T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            self.negvdc_1000_reading = float(my_instrument.read().strip())
+
+            run["negvdc_1000v_short_medium_v"] = self.negvdc_1000_reading
+            if -999.90 >= self.negvdc_1000_reading >= -1000.10:
+                run["negvdc_1000v_short_medium_v_result"] = "PASS"
+            else:
+                run["negvdc_1000v_short_medium_v_result"] = "FAIL"
+
+            my_instrument.write("F1R5D1S2T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+            my_instrument.write("D0?")
+
+            self.negvdc_1000_reading = float(my_instrument.read().strip())
+
+            run["negvdc_1000v_short_fast_v"] = self.negvdc_1000_reading
+            if -999.7 <= self.negvdc_1000_reading <= -1000.3:
+                run["negvdc_1000v_short_fast_v_result"] = "PASS"
+            else:
+                run["negvdc_1000v_short_fast_v_result"] = "FAIL"
+
+            my_instrument.write("F1R5S0T0Y0B0?")
+            my_instrument.read()
+            my_instrument.write("B1?")
+
+            self.close()
+            self.hundredVDC = HundredVDC()
+            self.hundredVDC.exec()
 
 
 

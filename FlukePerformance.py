@@ -1573,8 +1573,1729 @@ class NegThousandVDC(QDialog):
             my_instrument.write("B1?")
 
             self.close()
-            self.hundredVDC = HundredVDC()
-            self.hundredVDC.exec()
+            self.linearPointOne = PointOne()
+            self.linearPointOne.exec()
+
+class PointOne(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "DC Voltage Linearity Verification Point One"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Temporarily remove the HI and LO jacks of the calibrator output and Fluke 8840A input\n"
+                                  "and short the HI and LO jacks with a provided cable.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +0 VDC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+
+            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
+            if -0.00002 <= self.zero_vdc_1_reading <= 0.00002:
+                run["zero_vdc_short_slow_v_result"] = "PASS"
+            else:
+                run["zero_vdc_short_slow_v_result"] = "FAIL"
+
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.pointTwo = PointTwo()
+            self.pointTwo.exec()
+
+class PointTwo(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "DC Voltage Linearity Verification Point Two"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Reconnect the calibrator to the HI and LO jacks of the Fluke 8840A.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with -0.03 VDC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+
+            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
+            if -0.03002 <= self.zero_vdc_1_reading <= -0.02998:
+                run["zero_vdc_short_slow_v_result"] = "PASS"
+            else:
+                run["zero_vdc_short_slow_v_result"] = "FAIL"
+
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.pointThree = PointThree()
+            self.pointThree.exec()
+
+class PointThree(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "DC Voltage Linearity Verification Point Three"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +0.03 VDC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+
+            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
+            if 0.02998 <= self.zero_vdc_1_reading <= 0.03002:
+                run["zero_vdc_short_slow_v_result"] = "PASS"
+            else:
+                run["zero_vdc_short_slow_v_result"] = "FAIL"
+
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.pointFour = PointFour()
+            self.pointFour.exec()
+
+class PointFour(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "DC Voltage Linearity Verification Point Four"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with -0.66 VDC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+
+            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
+            if -0.66003 <= self.zero_vdc_1_reading <= -.65997:
+                run["zero_vdc_short_slow_v_result"] = "PASS"
+            else:
+                run["zero_vdc_short_slow_v_result"] = "FAIL"
+
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.pointFive = PointFive()
+            self.pointFive.exec()
+
+class PointFive(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "DC Voltage Linearity Verification Point Five"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +0.66 VDC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+
+            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
+            if 0.65997 <= self.zero_vdc_1_reading <= 0.66003:
+                run["zero_vdc_short_slow_v_result"] = "PASS"
+            else:
+                run["zero_vdc_short_slow_v_result"] = "FAIL"
+
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.pointSix = PointSix()
+            self.pointSix.exec()
+
+class PointSix(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "DC Voltage Linearity Verification Point Six"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with -1.97 VDC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+
+            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
+            if -1.97004 <= self.zero_vdc_1_reading <= -1.96996:
+                run["zero_vdc_short_slow_v_result"] = "PASS"
+            else:
+                run["zero_vdc_short_slow_v_result"] = "FAIL"
+
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.pointSeven = PointSeven()
+            self.pointSeven.exec()
+
+class PointSeven(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "DC Voltage Linearity Verification Point Seven"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +1.97 VDC output from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+
+            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
+            if 1.96996 <= self.zero_vdc_1_reading <= 1.97004:
+                run["zero_vdc_short_slow_v_result"] = "PASS"
+            else:
+                run["zero_vdc_short_slow_v_result"] = "FAIL"
+
+
+            my_instrument.write("F1R2S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.tenmVAC = TenmVAC()
+            self.tenmVAC.exec()
+
+class TenmVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "10 mV AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Connect the HI and LO jacks of the calibrator output and Fluke 8840A input.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Supply Fluke 8840A with +10 mV AC output at 100 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_10_reading = float(my_instrument.read().strip())
+
+            run["mvac_10mv_short_slow_v"] = self.mvac_10_reading
+            if 0.00799 <= self.mvac_10_reading <= 0.01201:
+                run["mvac_10mv_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_10mv_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.HundredmVAC = HundredmVAC()
+            HundredmVAC.exec()
+
+class HundredmVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "100 mV AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +100 mV AC output at 100 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_100_reading = float(my_instrument.read().strip())
+
+            run["mvac_100mv_short_slow_v"] = self.mvac_100_reading
+            if 0.09886 <= self.mvac_100_reading <= 0.10114:
+                run["mvac_100mv_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_100mv_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.threeHundredmVAC = ThreeHundredmVAC()
+            self.threeHundredmVAC.exec()
+
+class ThreeHundredmVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "300 mV AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +300 mV AC output at 100 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_300_reading = float(my_instrument.read().strip())
+
+            run["mvac_300mv_short_slow_v"] = self.mvac_300_reading
+            if 0.29858 <= self.mvac_300_reading <= 0.30142:
+                run["mvac_300mv_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_300mv_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.OneVAC = OneVAC()
+            OneVAC.exec()
+
+
+class OneVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "1 V AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +1 V AC output at 100 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.vac_1_reading = float(my_instrument.read().strip())
+
+            run["vac_1_v_short_slow_v"] = self.vac_1_reading
+            if 0.99760 <= self.vac_1_reading <= 1.00240:
+                run["vac_1_v_short_slow_v_result"] = "PASS"
+            else:
+                run["vac_1_v_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.oneNineVAC = OneNineVAC()
+            self.oneNineVAC.exec()
+
+
+class OneNineVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "1.9 V AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +1.9 V AC output at 100 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.vac_19_reading = float(my_instrument.read().strip())
+
+            run["vac_19_short_slow_v"] = self.vac_19_reading
+            if 1.89634 <= self.vac_19_reading <= 1.90366:
+                run["vac_19_short_slow_v_result"] = "PASS"
+            else:
+                run["vac_19_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.hundredmVAC100 = HundredmVAC()
+            self.hundredmVAC100.exec()
+
+class HundredmVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "100 mV AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +100 mV AC output at 20 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_100_reading = float(my_instrument.read().strip())
+
+            run["mvac_100_short_slow_v"] = self.mvac_100_reading
+            if 0.09780 <= self.mvac_100_reading <= 0.10220:
+                run["mvac_100_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_100_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.OneNine20VAC = OneNine20VAC()
+            self.OneNine20VAC.exec()
+
+class OneNine20VAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "1.9 V 20 Hz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +1.9 V AC output at 20 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.vac_1920_reading = float(my_instrument.read().strip())
+
+            run["vac_1920_short_slow_v"] = self.vac_1920_reading
+            if 1.87620 <= self.vac_1920_reading <= 1.92380:
+                run["vac_1920_short_slow_v_result"] = "PASS"
+            else:
+                run["vac_1920_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.hundred45mVAC = Hundred45mVAC()
+            self.hundred45mVAC.exec()
+
+class Hundred45mVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "100 mV 45 Hz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +100 mV AC output at 45 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_100_45_reading = float(my_instrument.read().strip())
+
+            run["mvac_100_45_short_slow_v"] = self.mvac_100_45_reading
+            if 0.09865 <= self.mvac_100_45_reading <= 0.10135:
+                run["mvac_100_45_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_100_45_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.OneNine45VAC = OneNine45VAC()
+            OneNine45VAC.exec()
+
+
+class OneNine45VAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "1.9 V 45 Hz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +1.9 V AC output at 45 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.vac_1920_reading = float(my_instrument.read().strip())
+
+            run["vac_19_45_short_slow_v"] = self.vac_19_45_reading
+            if 1.89235 <= self.vac_19_45_reading <= 1.90765:
+                run["vac_19_45_short_slow_v_result"] = "PASS"
+            else:
+                run["vac_19_45_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.onemVAC = OnemVAC()
+            self.onemVAC.exec()
+
+class OnemVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "1 mV 100 Hz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +1 mV AC output at 100 Hz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_1_100_reading = float(my_instrument.read().strip())
+
+            run["mvac_1_100_short_slow_v"] = self.mvac_1_100_reading
+            if 0.00799 <= self.mvac_1_100_reading <= 0.001201:
+                run["mvac_1_100_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_1_100_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.hundred90mVAC = Hundred90mVAC()
+            self.hundred90mVAC.exec()
+
+class Hundred90mVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "190 mV 20 kHz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +190 mV AC output at 20 kHz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_190_20000_reading = float(my_instrument.read().strip())
+
+            run["mvac_190_20000_short_slow_v"] = self.mvac_190_20000_reading
+            if 0.189634 <= self.mvac_190_20000_reading <= 0.190366:
+                run["mvac_190_20000_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_190_20000_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.ten100kmVAC = TenmV100kAC()
+            self.ten100kmVAC.exec()
+
+class TenmV100kAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "10 mV 100 kHz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +10 mV AC output at 100 kHz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_10_100000_reading = float(my_instrument.read().strip())
+
+            run["mvac_10_100000_short_slow_v"] = self.mvac_10_100000_reading
+            if 0.009650 <= self.mvac_10_100000_reading <= 0.010350:
+                run["mvac_10_100000_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_10_100000_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.hundred100kmVAC = Hundred100kmVAC()
+            self.hundred100kmVAC.exec()
+
+class Hundred100kmVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "100 mV 100 kHz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +100 mV AC output at 100 kHz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R2S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_100_100000_reading = float(my_instrument.read().strip())
+
+            run["mvac_100_100000_short_slow_v"] = self.mvac_100_100000_reading
+            if 0.09650 <= self.mvac_100_100000_reading <= 0.10350:
+                run["mvac_100_100000_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_100_100000_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.one100kVAC = One100kVAC()
+            self.one100kVAC.exec()
+
+class One100kVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "1 V 100 kHz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +100 mV AC output at 100 kHz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R3S0T0Y0B0?")
+            my_instrument.read()
+
+            self.vac_1_100000_reading = float(my_instrument.read().strip())
+
+            run["vac_1_100000_short_slow_v"] = self.vac_1_100000_reading
+            if 0.9650 <= self.vac_1_100000_reading <= 1.0350:
+                run["vac_1_100000_short_slow_v_result"] = "PASS"
+            else:
+                run["vac_1_100000_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.ten100kVAC = Ten100kVAC()
+            self.ten100kVAC.exec()
+
+class Ten100kVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "10 V 100 kHz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +10 V AC output at 100 kHz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R4S0T0Y0B0?")
+            my_instrument.read()
+
+            self.vac_10_100000_reading = float(my_instrument.read().strip())
+
+            run["vac_10_100000_short_slow_v"] = self.vac_10_100000_reading
+            if 9.650 <= self.vac_10_100000_reading <= 10.350:
+                run["vac_10_100000_short_slow_v_result"] = "PASS"
+            else:
+                run["vac_10_100000_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.hundred100kVAC = Hundred100kVAC()
+            self.hundred100kVAC.exec()
+
+class Hundred100kVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "100 V 100 kHz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +100 V AC output at 100 kHz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R5S0T0Y0B0?")
+            my_instrument.read()
+
+            self.vac_100_100000_reading = float(my_instrument.read().strip())
+
+            run["vac_100_100000_short_slow_v"] = self.vac_100_100000_reading
+            if 96.50 <= self.vac_100_100000_reading <= 103.50:
+                run["vac_100_100000_short_slow_v_result"] = "PASS"
+            else:
+                run["vac_100_100000_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.nineteen100kVAC = Nineteen100kVAC()
+            self.nineteen100kVAC.exec()
+
+class Nineteen100kVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "19 V 100 kHz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +19 V AC output at 100 kHz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R3S0T0Y0B0?")
+            my_instrument.read()
+
+            self.vac_19_100000_reading = float(my_instrument.read().strip())
+
+            run["vac_19_100000_short_slow_v"] = self.vac_19_100000_reading
+            if 18.8750 <= self.vac_19_100000_reading <= 19.1250:
+                run["vac_19_100000_short_slow_v_result"] = "PASS"
+            else:
+                run["vac_19_100000_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.close()
+            self.hundred90100kmVAC = Hundred90100kmVAC()
+            self.hundred90100kmVAC.exec()
+
+class Hundred90100kmVAC(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "190 mV 100 kHz AC Voltage Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with +190 mV AC output at 100 kHz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F2R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.mvac_190_100000_reading = float(my_instrument.read().strip())
+
+            run["mvac_190_100000_short_slow_v"] = self.mvac_190_100000_reading
+            if 0.188750 <= self.mvac_190_100000_reading <= 0.191250:
+                run["mvac_190_100000_short_slow_v_result"] = "PASS"
+            else:
+                run["mvac_190_100000_short_slow_v_result"] = "FAIL"
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            self.close()
+            self.hundred45mVAC = Hundred45mVAC()
+            self.hundred45mVAC.exec()
 
 
 

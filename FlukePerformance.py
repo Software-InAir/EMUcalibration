@@ -11,6 +11,18 @@ import requests
 
 USE_INSTRUMENT = True
 
+allTests = False
+diagnosticsConfig = False
+dcVerificationConfig = False
+linearityTestConfig = False
+acVerificationConfig = False
+resistanceVerificationConfig = False
+fourWireConfig = False
+twoWireConfig = False
+dcCurrentConfig = False
+acCurrentConfig = False
+
+
 if USE_INSTRUMENT:
     rm = pyvisa.ResourceManager()
 
@@ -29,6 +41,8 @@ class FlukePerformance(QDialog):
     def __init__(self):
         super().__init__()
 
+        print(diagnosticsConfig)
+
         columns = [
             "date",
             "serial",
@@ -43,7 +57,7 @@ class FlukePerformance(QDialog):
         self.param3 = ""
 
         self.setWindowTitle("Fluke 8840A")
-        self.setFixedSize(1280, 635)
+        self.setFixedSize(1280, 800)
 
         self.on = 0
 
@@ -95,9 +109,41 @@ class FlukePerformance(QDialog):
         self.allTests.setChecked(True)
         self.procedureButtonsLayout.addWidget(self.allTests)
 
-        self.initialization = QRadioButton("Initialization")
-        self.initialization.setChecked(False)
-        self.procedureButtonsLayout.addWidget(self.initialization)
+        self.diagnostictests = QRadioButton("Self Diagnostic Tests")
+        self.diagnostictests.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.diagnostictests)
+
+        self.dcverification = QRadioButton("DC Voltage Verification")
+        self.dcverification.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.dcverification)
+
+        self.linearity = QRadioButton("Linearity Check")
+        self.linearity.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.linearity)
+
+        self.acverification = QRadioButton("AC Voltage Verification")
+        self.acverification.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.acverification)
+
+        self.resistanceverification = QRadioButton("Resistance Verification")
+        self.resistanceverification.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.resistanceverification)
+
+        self.fourwire = QRadioButton("4-Wire Resistance")
+        self.fourwire.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.fourwire)
+
+        self.twowire = QRadioButton("2-Wire Resistance")
+        self.twowire.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.twowire)
+
+        self.dccurrent = QRadioButton("DC Current")
+        self.dccurrent.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.dccurrent)
+
+        self.accurrent = QRadioButton("AC Current")
+        self.accurrent.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.accurrent)
 
         self.procedureLayout.addStretch(1)
 
@@ -124,14 +170,52 @@ class FlukePerformance(QDialog):
         try:
 
             if self.allTests.isChecked():
-                self.allTests = True
-                self.frontJacks = FrontJacks()
-                self.frontJacks.exec()
+                global allTests
+                allTests = True
 
+            if self.diagnostictests.isChecked():
+                global diagnosticsConfig
+                diagnosticsConfig = True
+                print(diagnosticsConfig)
 
-            if self.initialization.isChecked():
-                self.frontJacks = FrontJacks()
-                self.frontJacks.exec()
+            if self.dcverification.isChecked():
+                global dcVerificationConfig
+                dcVerificationConfig = True
+
+            if self.linearity.isChecked():
+                global linearityTestConfig
+                linearityTestConfig = True
+
+            if self.acverification.isChecked():
+                global acVerificationConfig
+                acVerificationConfig = True
+
+            if self.resistanceverification.isChecked():
+                global resistanceVerificationConfig
+                resistanceVerificationConfig = True
+
+            if self.fourwire.isChecked():
+                global fourWireConfig
+                fourWireConfig = True
+
+            if self.twowire.isChecked():
+                global twoWireConfig
+                twoWireConfig = True
+
+            if self.dccurrent.isChecked():
+                global dcCurrentConfig
+                dcCurrentConfig = True
+
+            if self.accurrent.isChecked():
+                try:
+                    global acCurrentConfig
+                    acCurrentConfig = True
+                    print(f"AC Test: {acCurrentConfig}")
+                except Exception as e:
+                    print(f"error: {e}")
+
+            self.frontJacks = FrontJacks()
+            self.frontJacks.exec()
 
         except Exception as e:
             print(f"Error: {e}")
@@ -269,10 +353,46 @@ class FrontJacks(QDialog):
 
         self.setLayout(self.contentLayout)
 
+
     def ContinueButtonClicked(self):
-        self.close()
-        self.diagnostics = Diagnostics()
-        self.diagnostics.exec()
+        try:
+            self.close()
+            if allTests:
+                self.diagnostics = Diagnostics()
+                self.diagnostics.exec()
+            if diagnosticsConfig:
+                self.diagnostics = Diagnostics()
+                self.diagnostics.exec()
+            if dcVerificationConfig:
+                self.dcVerification = DCVoltageVerification()
+                self.dcVerification.exec()
+            if linearityTestConfig:
+                self.linearity = PointOne()
+                self.linearity.exec()
+            if acVerificationConfig:
+                self.acVerification = TenmVAC()
+                self.acVerification.exec()
+            if resistanceVerificationConfig:
+                self.resistanceVerification = ResistanceVerification()
+                self.resistanceVerification.exec()
+            if fourWireConfig:
+                self.fourWireTests = HundredOhm4Wire()
+                self.fourWireTests.exec()
+            if twoWireConfig:
+                self.twoWireTests = HundredOhm2Wire()
+                self.twoWireTests.exec()
+            if dcCurrentConfig:
+                self.dcCurrent = DCCurrent0()
+                self.dcCurrent.exec()
+            if acCurrentConfig:
+                try:
+                    print("here 2")
+                    self.acCurrent = ACCurrent0()
+                    self.acCurrent.exec()
+                except Exception as e:
+                    print(f"error: {e}")
+        except Exception as e:
+            print(f"Continue error: {e}")
 
 
     def BackButtonClicked(self):
@@ -436,9 +556,17 @@ class Diagnostics(QDialog):
         self.progressBar.setFormat("Self Diagnostics Test Complete!")
 
         time.sleep(3)
-        self.close()
-        self.dcVoltageVerification = DCVoltageVerification()
-        self.dcVoltageVerification.exec()
+        try:
+            if allTests:
+                self.close()
+                self.dcVoltageVerification = DCVoltageVerification()
+                self.dcVoltageVerification.exec()
+            elif diagnosticsConfig:
+                self.close()
+                self.completed = Completed()
+                self.completed.exec()
+        except Exception as e:
+            print(f"Error: {e!r}")
 
 class DCVoltageVerification(QDialog):
     def __init__(self):
@@ -1749,15 +1877,16 @@ class NegThousandVDC(QDialog):
             my_instrument.write("F1R5S0T0Y0B0?")
             my_instrument.read()
             my_instrument.write("B1?")
+            if allTests:
+                self.close()
+                self.linearPointOne = PointOne()
+                self.linearPointOne.exec()
+            elif dcVerificationConfig:
+                self.close()
+                self.testComplete = Completed()
+                self.testComplete.exec()
 
-            self.close()
-            self.linearPointOne = PointOne()
-            self.linearPointOne.exec()
 
-        else:
-            self.close()
-            self.linearPointOne = PointOne()
-            self.linearPointOne.exec()
 
 
 class PointOne(QDialog):
@@ -1771,8 +1900,8 @@ class PointOne(QDialog):
 
         self.contentLayout.addStretch(1)
 
-        self.promptLabel = QLabel("Temporarily remove the HI and LO jacks of the calibrator output and Fluke 8840A input\n"
-                                  "and short the HI and LO jacks with a provided cable.")
+        self.promptLabel = QLabel("Connect the HI and LO jacks of the calibrator output and Fluke 8840A input.\n"
+                                  )
         self.promptLabel.setStyleSheet("""
                                     font-size: 18px
         """)
@@ -1821,13 +1950,16 @@ class PointOne(QDialog):
 
             my_instrument.write("F1R2S0T0Y0B0?")
             my_instrument.read()
-            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+            self.point1_vdc_1_reading = float(my_instrument.read().strip())
 
-            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
-            if -0.00002 <= self.zero_vdc_1_reading <= 0.00002:
-                run["zero_vdc_short_slow_v_result"] = "PASS"
+            run["point1_vdc_short_slow_v"] = self.point1_vdc_1_reading
+            if -0.00002 <= self.point1_vdc_1_reading <= 0.00002:
+                run["point1_vdc_short_slow_v_result"] = "PASS"
             else:
-                run["zero_vdc_short_slow_v_result"] = "FAIL"
+                run["point1_vdc_short_slow_v_result"] = "FAIL"
+
+            print(run["point1_vdc_short_slow_v"])
+            print(run["point1_vdc_short_slow_v_result"])
 
 
             my_instrument.write("F1R2S0T0Y0B0?")
@@ -1904,13 +2036,16 @@ class PointTwo(QDialog):
 
             my_instrument.write("F1R2S0T0Y0B0?")
             my_instrument.read()
-            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+            self.point2_vdc_1_reading = float(my_instrument.read().strip())
 
-            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
-            if -0.03002 <= self.zero_vdc_1_reading <= -0.02998:
-                run["zero_vdc_short_slow_v_result"] = "PASS"
+            run["point2_vdc_short_slow_v"] = self.point2_vdc_1_reading
+            if -0.03002 <= self.point2_vdc_1_reading <= -0.02998:
+                run["point2_vdc_short_slow_v_result"] = "PASS"
             else:
-                run["zero_vdc_short_slow_v_result"] = "FAIL"
+                run["point2_vdc_short_slow_v_result"] = "FAIL"
+
+            print(run["point2_vdc_short_slow_v"])
+            print(run["point2_vdc_short_slow_v_result"])
 
 
             my_instrument.write("F1R2S0T0Y0B0?")
@@ -1978,13 +2113,16 @@ class PointThree(QDialog):
 
             my_instrument.write("F1R2S0T0Y0B0?")
             my_instrument.read()
-            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+            self.point3_vdc_1_reading = float(my_instrument.read().strip())
 
-            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
-            if 0.02998 <= self.zero_vdc_1_reading <= 0.03002:
-                run["zero_vdc_short_slow_v_result"] = "PASS"
+            run["point3_vdc_short_slow_v"] = self.point3_vdc_1_reading
+            if 0.02998 <= self.point3_vdc_1_reading <= 0.03002:
+                run["point3_vdc_short_slow_v_result"] = "PASS"
             else:
-                run["zero_vdc_short_slow_v_result"] = "FAIL"
+                run["point3_vdc_short_slow_v_result"] = "FAIL"
+
+            print(run["point3_vdc_short_slow_v"])
+            print(run["point3_vdc_short_slow_v_result"])
 
 
             my_instrument.write("F1R2S0T0Y0B0?")
@@ -2052,13 +2190,16 @@ class PointFour(QDialog):
 
             my_instrument.write("F1R2S0T0Y0B0?")
             my_instrument.read()
-            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+            self.point4_vdc_1_reading = float(my_instrument.read().strip())
 
-            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
-            if -0.66003 <= self.zero_vdc_1_reading <= -.65997:
-                run["zero_vdc_short_slow_v_result"] = "PASS"
+            run["point4_vdc_short_slow_v"] = self.point4_vdc_1_reading
+            if -0.66003 <= self.point4_vdc_1_reading <= -.65997:
+                run["point4_vdc_short_slow_v_result"] = "PASS"
             else:
-                run["zero_vdc_short_slow_v_result"] = "FAIL"
+                run["point4_vdc_short_slow_v_result"] = "FAIL"
+
+            print(run["point4_vdc_short_slow_v"])
+            print(run["point4_vdc_short_slow_v_result"])
 
 
             my_instrument.write("F1R2S0T0Y0B0?")
@@ -2126,13 +2267,16 @@ class PointFive(QDialog):
 
             my_instrument.write("F1R2S0T0Y0B0?")
             my_instrument.read()
-            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+            self.point5_vdc_1_reading = float(my_instrument.read().strip())
 
-            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
-            if 0.65997 <= self.zero_vdc_1_reading <= 0.66003:
-                run["zero_vdc_short_slow_v_result"] = "PASS"
+            run["point5_vdc_short_slow_v"] = self.point5_vdc_1_reading
+            if 0.65997 <= self.point5_vdc_1_reading <= 0.66003:
+                run["point5_vdc_short_slow_v_result"] = "PASS"
             else:
-                run["zero_vdc_short_slow_v_result"] = "FAIL"
+                run["point5_vdc_short_slow_v_result"] = "FAIL"
+
+            print(run["point5_vdc_short_slow_v"])
+            print(run["point5_vdc_short_slow_v_result"])
 
 
             my_instrument.write("F1R2S0T0Y0B0?")
@@ -2200,13 +2344,17 @@ class PointSix(QDialog):
 
             my_instrument.write("F1R2S0T0Y0B0?")
             my_instrument.read()
-            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+            self.point6_vdc_1_reading = float(my_instrument.read().strip())
 
-            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
-            if -1.97004 <= self.zero_vdc_1_reading <= -1.96996:
-                run["zero_vdc_short_slow_v_result"] = "PASS"
+            run["point6_vdc_short_slow_v"] = self.point6_vdc_1_reading
+            if -1.97004 <= self.point6_vdc_1_reading <= -1.96996:
+                run["point6_vdc_short_slow_v_result"] = "PASS"
             else:
-                run["zero_vdc_short_slow_v_result"] = "FAIL"
+                run["point6_vdc_short_slow_v_result"] = "FAIL"
+
+            print(run["point6_vdc_short_slow_v"])
+            print(run["point6_vdc_short_slow_v_result"])
+
 
 
             my_instrument.write("F1R2S0T0Y0B0?")
@@ -2274,27 +2422,29 @@ class PointSeven(QDialog):
 
             my_instrument.write("F1R2S0T0Y0B0?")
             my_instrument.read()
-            self.zero_vdc_1_reading = float(my_instrument.read().strip())
+            self.point7_vdc_1_reading = float(my_instrument.read().strip())
 
-            run["zero_vdc_short_slow_v"] = self.zero_vdc_1_reading
-            if 1.96996 <= self.zero_vdc_1_reading <= 1.97004:
-                run["zero_vdc_short_slow_v_result"] = "PASS"
+            run["point7_vdc_short_slow_v"] = self.point7_vdc_1_reading
+            if 1.96996 <= self.point7_vdc_1_reading <= 1.97004:
+                run["point7_vdc_short_slow_v_result"] = "PASS"
             else:
-                run["zero_vdc_short_slow_v_result"] = "FAIL"
+                run["point7_vdc_short_slow_v_result"] = "FAIL"
+
+            print(run["point7_vdc_short_slow_v"])
+            print(run["point7_vdc_short_slow_v_result"])
 
 
             my_instrument.write("F1R2S0T0Y0B0?")
             my_instrument.read()
 
-
-            self.close()
-            self.tenmVAC = TenmVAC()
-            self.tenmVAC.exec()
-
-        else:
-            self.close()
-            self.tenmVAC = TenmVAC()
-            self.tenmVAC.exec()
+            if allTests:
+                self.close()
+                self.tenmVAC = TenmVAC()
+                self.tenmVAC.exec()
+            elif linearityTestConfig:
+                self.close()
+                self.testComplete = Completed()
+                self.testComplete.exec()
 
 
 class TenmVAC(QDialog):
@@ -3606,14 +3756,15 @@ class Hundred90100kmVAC(QDialog):
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
 
-            self.close()
-            self.resistanceVerification = ResistanceVerification()
-            self.resistanceVerification.exec()
+            if allTests:
+                self.close()
+                self.resistanceVerification = ResistanceVerification()
+                self.resistanceVerification.exec()
+            elif acVerificationConfig:
+                self.close()
+                self.testComplete = Completed()
+                self.testComplete.exec()
 
-        else:
-            self.close()
-            self.resistanceVerification = ResistanceVerification()
-            self.resistanceVerification.exec()
 
 #---------------------------------------------------------------------------------- Change from tolerances to limits
 #---------------------------------------------------------------------------------- Implement numbers to see where break happens
@@ -3630,7 +3781,7 @@ class ResistanceVerification(QDialog):
         self.contentLayout.addStretch(1)
 
 
-        self.promptLabel = QLabel("Short the HI and LO jacks of the Fluke 8840A with provided cable.")
+        self.promptLabel = QLabel("Short the HI, HI Sense, LO, and LO Sense jacks of the Fluke 8840A with provided cable.")
         self.promptLabel.setStyleSheet("""
                                     font-size: 18px
         """)
@@ -3944,288 +4095,377 @@ class ResistanceVerification(QDialog):
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
 
+            self.close()
+            self.twoWireVerification = ResistanceVerification2Wire()
+            self.twoWireVerification.exec()
+
 #------------------------------------------------------------- 2-wire Ohm Test
 #------------------------------------------------------------- 200 ohm
 
-            my_instrument.write("F3R1D1S0T0Y0B0")
-            my_instrument.read()
-            self.res_2_200_reading = float(my_instrument.read().strip())
+class ResistanceVerification2Wire(QDialog):
+    def __init__(self):
+        super().__init__()
 
-            run["res_2_200ohm_short_slow_v"] = self.res_2_200_reading
-            if -0.004 <= self.res_2_200_reading <= 0.004:
-                run["res_2_200ohm_short_slow_v_result"] = "PASS"
-            else:
-                run["res_2_200ohm_short_slow_v_result"] = "FAIL"
+        self.windowTitle = "Resistance Verification"
+        self.setFixedSize(800, 300)
 
-            print(run["res_2_200ohm_short_slow_v"])
-            print(run["res_2_200ohm_short_slow_v_result"])
+        self.contentLayout = QVBoxLayout()
 
-            my_instrument.write("F3R1D1S1T0Y0B0")
-            my_instrument.read()
-            self.res_2_200_reading = float(my_instrument.read().strip())
+        self.contentLayout.addStretch(1)
 
-            run["res_2_200ohm_short_medium_v"] = self.res_2_200_reading
-            if -0.006 <= self.res_2_200_reading <= 0.006:
-                run["res_2_200ohm_short_medium_v_result"] = "PASS"
-            else:
-                run["res_2_200ohm_short_medium_v_result"] = "FAIL"
+        self.promptLabel = QLabel(
+            "Short the HI and LO jacks of the Fluke 8840A with provided cable.\n"
+            "Ensure the HI Sense and LO Sense jacks are disconnected.")
+        self.promptLabel.setStyleSheet("""
+                                            font-size: 18px
+                """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
 
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
 
-            print(run["res_2_200ohm_short_medium_v"])
-            print(run["res_2_200ohm_short_medium_v_result"])
+        self.actionLabel = QLabel("Proceed by selecting 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                                    font-size: 18px;
+                                                    font-weight: bold;
+                        """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
 
-            my_instrument.write("F3R1D1S2T0Y0B0")
-            my_instrument.read()
-            my_instrument.write("D0?")
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
 
-            self.res_2_200_reading = float(my_instrument.read().strip())
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
 
-            run["res_2_200ohm_short_fast_v"] = self.res_2_200_reading
-            if -0.03 <= self.res_2_200_reading <= 0.03:
-                run["res_2_200ohm_short_fast_v_result"] = "PASS"
-            else:
-                run["res_2_200ohm_short_fast_v_result"] = "FAIL"
+        self.buttonLayout.addStretch(1)
 
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
 
-            print(run["res_2_200ohm_short_fast_v"])
-            print(run["res_2_200ohm_short_fast_v_result"])
+        self.buttonLayout.addStretch(1)
 
-#-------------------------------------------------------- Shorted 2 kohm range
+        self.contentLayout.addStretch(1)
 
-            my_instrument.write("F3R2D1S0T0Y0B0")
-            my_instrument.read()
-            self.res_2_2kohm_reading = float(my_instrument.read().strip())
+        self.setLayout(self.contentLayout)
 
-            run["res_2_2kohm_short_slow_v"] = self.res_2_2kohm_reading
-            if -0.03 <= self.res_2_2kohm_reading <= 0.03:
-                run["res_2_2kohm_short_slow_v_result"] = "PASS"
-            else:
-                run["res_2_2kohm_short_slow_v_result"] = "FAIL"
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
 
+            try:
 
-            print(run["res_2_2kohm_short_slow_v"])
-            print(run["res_2_2kohm_short_slow_v_result"])
+                print("Beginning of Two Wire Resistance Verification Results")
 
-            my_instrument.write("F3R2D1S1T0Y0B0")
-            self.res_2_2kohm_reading = float(my_instrument.read().strip())
+                # Throw some D's on it. (Delays)
 
-            run["res_2_2kohm_short_medium_v"] = self.res_2_2kohm_reading
-            if -0.05 <= self.res_2_2kohm_reading <= 0.05:
-                run["res_2_2kohm_short_medium_v_result"] = "PASS"
-            else:
-                run["res_2_2kohm_short_medium_v_result"] = "FAIL"
+                my_instrument.write("F3R1D1S0T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                self.res_2_200_reading = float(my_instrument.read().strip())
 
+                run["res_2_200ohm_short_slow_v"] = self.res_2_200_reading
+                if -0.004 <= self.res_2_200_reading <= 0.004:
+                    run["res_2_200ohm_short_slow_v_result"] = "PASS"
+                else:
+                    run["res_2_200ohm_short_slow_v_result"] = "FAIL"
 
-            print(run["res_2_2kohm_short_medium_v"])
-            print(run["res_2_2kohm_short_medium_v_result"])
+                print(run["res_2_200ohm_short_slow_v"])
+                print(run["res_2_200ohm_short_slow_v_result"])
 
-            my_instrument.write("F3R2D1S2T0Y0B0")
-            my_instrument.read()
-            my_instrument.write("D0?")
+                my_instrument.write("F3R1D1S1T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                self.res_2_200_reading = float(my_instrument.read().strip())
 
-            self.res_2_2kohm_reading = float(my_instrument.read().strip())
+                run["res_2_200ohm_short_medium_v"] = self.res_2_200_reading
+                if -0.006 <= self.res_2_200_reading <= 0.006:
+                    run["res_2_200ohm_short_medium_v_result"] = "PASS"
+                else:
+                    run["res_2_200ohm_short_medium_v_result"] = "FAIL"
 
-            run["res_2_2kohm_short_fast_v"] = self.res_2_2kohm_reading
-            if -0.2 <= self.res_2_2kohm_reading <= 0.2:
-                run["res_2_2kohm_short_fast_v_result"] = "PASS"
-            else:
-                run["res_2_2kohm_short_fast_v_result"] = "FAIL"
 
+                print(run["res_2_200ohm_short_medium_v"])
+                print(run["res_2_200ohm_short_medium_v_result"])
 
-            print(run["res_2_2kohm_short_fast_v"])
-            print(run["res_2_2kohm_short_fast_v_result"])
+                my_instrument.write("F3R1D1S2T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                my_instrument.write("D0?")
 
-#-------------------------------------------------------- Shorted 20 kohm range
+                self.res_2_200_reading = float(my_instrument.read().strip())
 
-            my_instrument.write("F3R3D1S0T0Y0B0")
-            my_instrument.read()
-            self.res_2_20k_reading = float(my_instrument.read().strip())
+                run["res_2_200ohm_short_fast_v"] = self.res_2_200_reading
+                if -0.03 <= self.res_2_200_reading <= 0.03:
+                    run["res_2_200ohm_short_fast_v_result"] = "PASS"
+                else:
+                    run["res_2_200ohm_short_fast_v_result"] = "FAIL"
 
-            run["res_2_20k_short_slow_v"] = self.res_2_20k_reading
-            if -0.3 <= self.res_2_20k_reading <= 0.3:
-                run["res_2_20k_short_slow_v_result"] = "PASS"
-            else:
-                run["res_2_20k_short_slow_v_result"] = "FAIL"
 
+                print(run["res_2_200ohm_short_fast_v"])
+                print(run["res_2_200ohm_short_fast_v_result"])
 
-            print(run["res_2_20kohm_short_slow_v"])
-            print(run["res_2_20kohm_short_slow_v_result"])
+    #-------------------------------------------------------- Shorted 2 kohm range
 
-            my_instrument.write("F3R3D1S1T0Y0B0")
-            self.res_2_20k_reading = float(my_instrument.read().strip())
+                my_instrument.write("F3R2D1S0T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                self.res_2_2kohm_reading = float(my_instrument.read().strip())
 
-            run["res_2_20k_short_medium_v"] = self.res_2_20k_reading
-            if -0.5 <= self.res_2_20k_reading <= 0.5:
-                run["res_2_20k_short_medium_v_result"] = "PASS"
-            else:
-                run["res_2_20k_short_medium_v_result"] = "FAIL"
+                run["res_2_2kohm_short_slow_v"] = self.res_2_2kohm_reading
+                if -0.03 <= self.res_2_2kohm_reading <= 0.03:
+                    run["res_2_2kohm_short_slow_v_result"] = "PASS"
+                else:
+                    run["res_2_2kohm_short_slow_v_result"] = "FAIL"
 
 
-            print(run["res_2_20kohm_short_medium_v"])
-            print(run["res_2_20kohm_short_medium_v_result"])
+                print(run["res_2_2kohm_short_slow_v"])
+                print(run["res_2_2kohm_short_slow_v_result"])
 
-            my_instrument.write("F3R3D1S2T0Y0B0")
-            my_instrument.read()
-            my_instrument.write("D0?")
+                my_instrument.write("F3R2D1S1T0Y0B0")
+                my_instrument.write("B1")
+                self.res_2_2kohm_reading = float(my_instrument.read().strip())
 
-            self.res_2_20k_reading = float(my_instrument.read().strip())
+                run["res_2_2kohm_short_medium_v"] = self.res_2_2kohm_reading
+                if -0.05 <= self.res_2_2kohm_reading <= 0.05:
+                    run["res_2_2kohm_short_medium_v_result"] = "PASS"
+                else:
+                    run["res_2_2kohm_short_medium_v_result"] = "FAIL"
 
-            run["res_2_20k_short_fast_v"] = self.res_2_20k_reading
-            if -2 <= self.res_2_20k_reading <= 2:
-                run["res_2_20k_short_fast_v_result"] = "PASS"
-            else:
-                run["res_2_20k_short_fast_v_result"] = "FAIL"
 
+                print(run["res_2_2kohm_short_medium_v"])
+                print(run["res_2_2kohm_short_medium_v_result"])
 
-            print(run["res_2_20kohm_short_fast_v"])
-            print(run["res_2_20kohm_short_fast_v_result"])
+                my_instrument.write("F3R2D1S2T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("D0?")
+                my_instrument.write("B1")
 
-#-------------------------------------------------------- Shorted 200 kohm range
+                self.res_2_2kohm_reading = float(my_instrument.read().strip())
 
-            my_instrument.write("F3R4D1S0T0Y0B0")
-            my_instrument.read()
-            self.res_2_200k_reading = float(my_instrument.read().strip())
+                run["res_2_2kohm_short_fast_v"] = self.res_2_2kohm_reading
+                if -0.2 <= self.res_2_2kohm_reading <= 0.2:
+                    run["res_2_2kohm_short_fast_v_result"] = "PASS"
+                else:
+                    run["res_2_2kohm_short_fast_v_result"] = "FAIL"
 
-            run["res_2_200k_short_slow_v"] = self.res_2_200k_reading
-            if -3 <= self.res_2_200k_reading <= 3:
-                run["res_2_200k_short_slow_v_result"] = "PASS"
-            else:
-                run["res_2_200k_short_slow_v_result"] = "FAIL"
 
+                print(run["res_2_2kohm_short_fast_v"])
+                print(run["res_2_2kohm_short_fast_v_result"])
 
-            print(run["res_2_200kohm_short_slow_v"])
-            print(run["res_2_200kohm_short_slow_v_result"])
+    #-------------------------------------------------------- Shorted 20 kohm range
 
-            my_instrument.write("F3R4D1S1T0Y0B0")
-            self.res_2_200k_reading = float(my_instrument.read().strip())
+                my_instrument.write("F3R3D1S0T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                self.res_2_20kohm_reading = float(my_instrument.read().strip())
 
-            run["res_2_200k_short_medium_v"] = self.res_2_200k_reading
-            if -5 <= self.res_2_200k_reading <= 5:
-                run["res_2_200k_short_medium_v_result"] = "PASS"
-            else:
-                run["res_2_200k_short_medium_v_result"] = "FAIL"
+                run["res_2_20kohm_short_slow_v"] = self.res_2_20kohm_reading
 
+                if -0.3 <= self.res_2_20kohm_reading <= 0.3:
+                    run["res_2_20kohm_short_slow_v_result"] = "PASS"
+                else:
+                    run["res_2_20kohm_short_slow_v_result"] = "FAIL"
 
-            print(run["res_2_200kohm_short_medium_v"])
-            print(run["res_2_200kohm_short_medium_v_result"])
 
-            my_instrument.write("F3R4D1S2T0Y0B0")
-            my_instrument.read()
-            my_instrument.write("D0?")
+                print(run["res_2_20kohm_short_slow_v"])
+                print(run["res_2_20kohm_short_slow_v_result"])
 
-            self.res_2_200k_reading = float(my_instrument.read().strip())
+                my_instrument.write("F3R3D1S1T0Y0B0")
+                my_instrument.write("B1")
+                self.res_2_20kohm_reading = float(my_instrument.read().strip())
 
-            run["res_2_200k_short_fast_v"] = self.res_2_200k_reading
-            if -20 <= self.res_2_200k_reading <= 20:
-                run["res_2_200k_short_fast_v_result"] = "PASS"
-            else:
-                run["res_2_200k_short_fast_v_result"] = "FAIL"
+                run["res_2_20kohm_short_medium_v"] = self.res_2_20kohm_reading
+                if -0.5 <= self.res_2_20kohm_reading <= 0.5:
+                    run["res_2_20kohm_short_medium_v_result"] = "PASS"
+                else:
+                    run["res_2_20kohm_short_medium_v_result"] = "FAIL"
 
 
-            print(run["res_2_200kohm_short_fast_v"])
-            print(run["res_2_200kohm_short_fast_v_result"])
+                print(run["res_2_20kohm_short_medium_v"])
+                print(run["res_2_20kohm_short_medium_v_result"])
 
-#-------------------------------------------------------- Shorted 2 mohm range
+                my_instrument.write("F3R3D1S2T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                my_instrument.write("D0?")
 
-            my_instrument.write("F3R5D1S0T0Y0B0")
-            my_instrument.read()
-            self.res_2_2mohm_reading = float(my_instrument.read().strip())
+                self.res_2_20kohm_reading = float(my_instrument.read().strip())
 
-            run["res_2_2mohm_short_slow_v"] = self.res_2_2mohm_reading
-            if -30 <= self.res_2_2mohm_reading <= 30:
-                run["res_2_2mohm_short_slow_v_result"] = "PASS"
-            else:
-                run["res_2_2mohm_short_slow_v_result"] = "FAIL"
+                run["res_2_20kohm_short_fast_v"] = self.res_2_20kohm_reading
+                if -2 <= self.res_2_20kohm_reading <= 2:
+                    run["res_2_20kohm_short_fast_v_result"] = "PASS"
+                else:
+                    run["res_2_20kohm_short_fast_v_result"] = "FAIL"
 
 
-            print(run["res_2_2mohm_short_slow_v"])
-            print(run["res_2_2mohm_short_slow_v_result"])
+                print(run["res_2_20kohm_short_fast_v"])
+                print(run["res_2_20kohm_short_fast_v_result"])
 
-            my_instrument.write("F3R5D1S1T0Y0B0")
-            self.res_2_2mohm_reading = float(my_instrument.read().strip())
+    #-------------------------------------------------------- Shorted 200 kohm range
 
-            run["res_2_2mohm_short_medium_v"] = self.res_2_2mohm_reading
-            if -60 <= self.res_2_2mohm_reading <= 60:
-                run["res_2_2mohm_short_medium_v_result"] = "PASS"
-            else:
-                run["res_2_2mohm_short_medium_v_result"] = "FAIL"
+                my_instrument.write("F3R4D1S0T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                self.res_2_200kohm_reading = float(my_instrument.read().strip())
 
+                run["res_2_200kohm_short_slow_v"] = self.res_2_200kohm_reading
+                if -3 <= self.res_2_200kohm_reading <= 3:
+                    run["res_2_200kohm_short_slow_v_result"] = "PASS"
+                else:
+                    run["res_2_200kohm_short_slow_v_result"] = "FAIL"
 
-            print(run["res_2_2mohm_short_medium_v"])
-            print(run["res_2_2mohm_short_medium_v_result"])
 
-            my_instrument.write("F3R5D1S2T0Y0B0")
-            my_instrument.read()
-            my_instrument.write("D0?")
+                print(run["res_2_200kohm_short_slow_v"])
+                print(run["res_2_200kohm_short_slow_v_result"])
 
-            self.res_2_2mohm_reading = float(my_instrument.read().strip())
+                my_instrument.write("F3R4D1S1T0Y0B0")
+                my_instrument.write("B1")
+                self.res_2_200k_reading = float(my_instrument.read().strip())
 
-            run["res_2_2mohm_short_fast_v"] = self.res_2_2mohm_reading
-            if -200 <= self.res_2_2mohm_reading <= 200:
-                run["res_2_2mohm_short_fast_v_result"] = "PASS"
-            else:
-                run["res_2_2mohm_short_fast_v_result"] = "FAIL"
+                run["res_2_200kohm_short_medium_v"] = self.res_2_200k_reading
+                if -5 <= self.res_2_200kohm_reading <= 5:
+                    run["res_2_200kohm_short_medium_v_result"] = "PASS"
+                else:
+                    run["res_2_200kohm_short_medium_v_result"] = "FAIL"
 
 
-            print(run["res_2_2mohm_short_fast_v"])
-            print(run["res_2_2mohm_short_fast_v_result"])
+                print(run["res_2_200kohm_short_medium_v"])
+                print(run["res_2_200kohm_short_medium_v_result"])
 
-#-------------------------------------------------------- Shorted 20 mohm range
+                my_instrument.write("F3R4D1S2T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                my_instrument.write("D0?")
 
-            my_instrument.write("F3R6D1S0T0Y0B0")
-            my_instrument.read()
-            self.res_2_20mohm_reading = float(my_instrument.read().strip())
+                self.res_2_200kohm_reading = float(my_instrument.read().strip())
 
-            run["res_2_20mohm_short_slow_v"] = self.res_2_20mohm_reading
-            if -400 <= self.res_2_20mohm_reading <= 400:
-                run["res_2_20mohm_short_slow_v_result"] = "PASS"
-            else:
-                run["res_2_20mohm_short_slow_v_result"] = "FAIL"
+                run["res_2_200kohm_short_fast_v"] = self.res_2_200kohm_reading
+                if -20 <= self.res_2_200kohm_reading <= 20:
+                    run["res_2_200kohm_short_fast_v_result"] = "PASS"
+                else:
+                    run["res_2_200kohm_short_fast_v_result"] = "FAIL"
 
 
-            print(run["res_2_20mohm_short_slow_v"])
-            print(run["res_2_20mohm_short_slow_v_result"])
+                print(run["res_2_200kohm_short_fast_v"])
+                print(run["res_2_200kohm_short_fast_v_result"])
 
-            my_instrument.write("F3R5D1S1T0Y0B0")
-            self.res_2_20mohm_reading = float(my_instrument.read().strip())
+    #-------------------------------------------------------- Shorted 2 mohm range
 
-            run["res_2_20mohm_short_medium_v"] = self.res_2_20mohm_reading
-            if -600 <= self.res_2_20mohm_reading <= 600:
-                run["res_2_20mohm_short_medium_v_result"] = "PASS"
-            else:
-                run["res_2_20mohm_short_medium_v_result"] = "FAIL"
+                my_instrument.write("F3R5D1S0T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                self.res_2_2mohm_reading = float(my_instrument.read().strip())
 
+                run["res_2_2mohm_short_slow_v"] = self.res_2_2mohm_reading
+                if -30 <= self.res_2_2mohm_reading <= 30:
+                    run["res_2_2mohm_short_slow_v_result"] = "PASS"
+                else:
+                    run["res_2_2mohm_short_slow_v_result"] = "FAIL"
 
-            print(run["res_2_20mohm_short_medium_v"])
-            print(run["res_2_20mohm_short_medium_v_result"])
 
-            my_instrument.write("F3R5D1S2T0Y0B0")
-            my_instrument.read()
-            my_instrument.write("D0?")
+                print(run["res_2_2mohm_short_slow_v"])
+                print(run["res_2_2mohm_short_slow_v_result"])
 
-            self.res_2_20mohm_reading = float(my_instrument.read().strip())
+                my_instrument.write("F3R5D1S1T0Y0B0")
+                my_instrument.write("B1")
+                self.res_2_2mohm_reading = float(my_instrument.read().strip())
 
-            run["res_2_20mohm_short_fast_v"] = self.res_2_20mohm_reading
-            if -2000 <= self.res_2_20mohm_reading <= 2000:
-                run["res_2_20mohm_short_fast_v_result"] = "PASS"
-            else:
-                run["res_2_20mohm_short_fast_v_result"] = "FAIL"
+                run["res_2_2mohm_short_medium_v"] = self.res_2_2mohm_reading
+                if -60 <= self.res_2_2mohm_reading <= 60:
+                    run["res_2_2mohm_short_medium_v_result"] = "PASS"
+                else:
+                    run["res_2_2mohm_short_medium_v_result"] = "FAIL"
 
-            print(run["res_2_20mohm_short_fast_v"])
-            print(run["res_2_20mohm_short_fast_v_result"])
 
+                print(run["res_2_2mohm_short_medium_v"])
+                print(run["res_2_2mohm_short_medium_v_result"])
 
-            my_instrument.write("F1R1S0T0Y0B0?")
-            my_instrument.read()
+                my_instrument.write("F3R5D1S2T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                my_instrument.write("D0?")
 
+                self.res_2_2mohm_reading = float(my_instrument.read().strip())
 
-            self.close()
-            self.hundredOhm4Wire = HundredOhm4Wire()
-            self.hundredOhm4Wire.exec()
-        else:
-            self.close()
-            self.hundredOhm4Wire = HundredOhm4Wire()
-            self.hundredOhm4Wire.exec()
+                run["res_2_2mohm_short_fast_v"] = self.res_2_2mohm_reading
+                if -200 <= self.res_2_2mohm_reading <= 200:
+                    run["res_2_2mohm_short_fast_v_result"] = "PASS"
+                else:
+                    run["res_2_2mohm_short_fast_v_result"] = "FAIL"
+
+
+                print(run["res_2_2mohm_short_fast_v"])
+                print(run["res_2_2mohm_short_fast_v_result"])
+
+    #-------------------------------------------------------- Shorted 20 mohm range
+
+                my_instrument.write("F3R6D1S0T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                self.res_2_20mohm_reading = float(my_instrument.read().strip())
+
+                run["res_2_20mohm_short_slow_v"] = self.res_2_20mohm_reading
+                if -400 <= self.res_2_20mohm_reading <= 400:
+                    run["res_2_20mohm_short_slow_v_result"] = "PASS"
+                else:
+                    run["res_2_20mohm_short_slow_v_result"] = "FAIL"
+
+
+                print(run["res_2_20mohm_short_slow_v"])
+                print(run["res_2_20mohm_short_slow_v_result"])
+
+                my_instrument.write("F3R5D1S1T0Y0B0")
+                my_instrument.write("B1")
+                self.res_2_20mohm_reading = float(my_instrument.read().strip())
+
+                run["res_2_20mohm_short_medium_v"] = self.res_2_20mohm_reading
+                if -600 <= self.res_2_20mohm_reading <= 600:
+                    run["res_2_20mohm_short_medium_v_result"] = "PASS"
+                else:
+                    run["res_2_20mohm_short_medium_v_result"] = "FAIL"
+
+
+                print(run["res_2_20mohm_short_medium_v"])
+                print(run["res_2_20mohm_short_medium_v_result"])
+
+                my_instrument.write("F3R5D1S2T0Y0B0")
+                my_instrument.read()
+                my_instrument.write("B1")
+                my_instrument.write("D0?")
+
+                self.res_2_20mohm_reading = float(my_instrument.read().strip())
+
+                run["res_2_20mohm_short_fast_v"] = self.res_2_20mohm_reading
+                if -2000 <= self.res_2_20mohm_reading <= 2000:
+                    run["res_2_20mohm_short_fast_v_result"] = "PASS"
+                else:
+                    run["res_2_20mohm_short_fast_v_result"] = "FAIL"
+
+                print(run["res_2_20mohm_short_fast_v"])
+                print(run["res_2_20mohm_short_fast_v_result"])
+
+
+                my_instrument.write("F1R1S0T0Y0B0?")
+                my_instrument.read()
+
+                if allTests:
+                    self.close()
+                    self.hundredOhm4Wire = HundredOhm4Wire()
+                    self.hundredOhm4Wire.exec()
+                elif resistanceVerificationConfig:
+                    self.close()
+                    self.testComplete = Completed()
+                    self.testComplete.exec()
+            except Exception as e:
+                print(f"Error: {e}")
+
 
 class HundredOhm4Wire(QDialog):
     def __init__(self):
@@ -4239,7 +4479,7 @@ class HundredOhm4Wire(QDialog):
         self.contentLayout.addStretch(1)
 
         self.promptLabel = QLabel(
-            "Connect the HI and LO jacks of the calibrator output and Fluke 8840A input.")
+            "Connect the HI, LO, HI Sense, and LO Sense jacks of the calibrator output and Fluke 8840A input.")
         self.promptLabel.setStyleSheet("""
                                             font-size: 18px
                 """)
@@ -4298,6 +4538,9 @@ class HundredOhm4Wire(QDialog):
             else:
                 run["res_100_4wire_short_slow_v_result"] = "FAIL"
 
+            print(run["res_100_4wire_short_slow_v"])
+            print(run["res_100_4wire_short_slow_v_result"])
+
             my_instrument.write("F4R1S1T0Y0B0?")
             my_instrument.read()
 
@@ -4309,8 +4552,12 @@ class HundredOhm4Wire(QDialog):
             else:
                 run["res_100_4wire_short_med_v_result"] = "FAIL"
 
+            print(run["res_100_4wire_short_med_v"])
+            print(run["res_100_4wire_short_med_v_result"])
+
             my_instrument.write("F4R1S2T0Y0B0?")
             my_instrument.read()
+
 
             self.res_100_4wire_reading = float(my_instrument.read().strip())
 
@@ -4319,6 +4566,9 @@ class HundredOhm4Wire(QDialog):
                 run["res_100_4wire_short_fast_v_result"] = "PASS"
             else:
                 run["res_100_4wire_short_fast_v_result"] = "FAIL"
+
+            print(run["res_100_4wire_short_fast_v"])
+            print(run["res_100_4wire_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -4392,6 +4642,9 @@ class ThousandOhm4Wire(QDialog):
             else:
                 run["res_1000_4wire_short_slow_v_result"] = "FAIL"
 
+            print(run["res_1000_4wire_short_slow_v"])
+            print(run["res_1000_4wire_short_slow_v_result"])
+
             my_instrument.write("F4R2S1T0Y0B0?")
             my_instrument.read()
 
@@ -4403,6 +4656,9 @@ class ThousandOhm4Wire(QDialog):
             else:
                 run["res_1000_4wire_short_med_v_result"] = "FAIL"
 
+            print(run["res_1000_4wire_short_med_v"])
+            print(run["res_1000_4wire_short_med_v_result"])
+
             my_instrument.write("F4R2S2T0Y0B0?")
             my_instrument.read()
 
@@ -4413,6 +4669,9 @@ class ThousandOhm4Wire(QDialog):
                 run["res_1000_4wire_short_fast_v_result"] = "PASS"
             else:
                 run["res_1000_4wire_short_fast_v_result"] = "FAIL"
+
+            print(run["res_1000_4wire_short_fast_v"])
+            print(run["res_1000_4wire_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -4475,7 +4734,7 @@ class TenThousandOhm4Wire(QDialog):
 
             # --------------------------------------------------- +100 mv range
 
-            my_instrument.write("F4R1S0T0Y0B0?")
+            my_instrument.write("F4R3S0T0Y0B0?")
             my_instrument.read()
 
             self.res_10000_4wire_reading = float(my_instrument.read().strip())
@@ -4485,6 +4744,9 @@ class TenThousandOhm4Wire(QDialog):
                 run["res_10000_4wire_short_slow_v_result"] = "PASS"
             else:
                 run["res_10000_4wire_short_slow_v_result"] = "FAIL"
+
+            print(run["res_10000_4wire_short_slow_v"])
+            print(run["res_10000_4wire_short_slow_v_result"])
 
             my_instrument.write("F4R3S1T0Y0B0?")
             my_instrument.read()
@@ -4497,6 +4759,9 @@ class TenThousandOhm4Wire(QDialog):
             else:
                 run["res_10000_4wire_short_med_v_result"] = "FAIL"
 
+            print(run["res_10000_4wire_short_med_v"])
+            print(run["res_10000_4wire_short_med_v_result"])
+
             my_instrument.write("F4R3S2T0Y0B0?")
             my_instrument.read()
 
@@ -4507,6 +4772,9 @@ class TenThousandOhm4Wire(QDialog):
                 run["res_10000_4wire_short_fast_v_result"] = "PASS"
             else:
                 run["res_10000_4wire_short_fast_v_result"] = "FAIL"
+
+            print(run["res_10000_4wire_short_fast_v"])
+            print(run["res_10000_4wire_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -4580,33 +4848,38 @@ class HundredThousandOhm4Wire(QDialog):
             else:
                 run["res_100000_4wire_short_slow_v_result"] = "FAIL"
 
-            my_instrument.write("F4R4S0T0Y0B0?")
-            my_instrument.read()
+            print(run["res_100000_4wire_short_slow_v"])
+            print(run["res_100000_4wire_short_slow_v_result"])
 
             my_instrument.write("F4R4S0T0Y0B0?")
             my_instrument.read()
 
-            self.res_100000_4wire_reading = float(my_instrument.read().strip())
-
-            run["res_100000_4wire_short_slow_v"] = self.res_100000_4wire_reading
-            if 99985.0 <= self.res_100000_4wire_reading <= 100015.0:
-                run["res_100000_4wire_short_slow_v_result"] = "PASS"
-            else:
-                run["res_100000_4wire_short_slow_v_result"] = "FAIL"
-
-            my_instrument.write("F4R4S0T0Y0B0?")
-            my_instrument.read()
-
-            my_instrument.write("F4R4S0T0Y0B0?")
-            my_instrument.read()
 
             self.res_100000_4wire_reading = float(my_instrument.read().strip())
 
             run["res_100000_4wire_short_med_v"] = self.res_100000_4wire_reading
-            if 99970.0 <= self.res_100000_4wire_reading <= 100030.0:
+            if 99985.0 <= self.res_100000_4wire_reading <= 100015.0:
                 run["res_100000_4wire_short_med_v_result"] = "PASS"
             else:
                 run["res_100000_4wire_short_med_v_result"] = "FAIL"
+
+            print(run["res_100000_4wire_short_med_v"])
+            print(run["res_100000_4wire_short_med_v_result"])
+
+            my_instrument.write("F4R4S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.res_100000_4wire_reading = float(my_instrument.read().strip())
+
+            run["res_100000_4wire_short_fast_v"] = self.res_100000_4wire_reading
+            if 99970.0 <= self.res_100000_4wire_reading <= 100030.0:
+                run["res_100000_4wire_short_fast_v_result"] = "PASS"
+            else:
+                run["res_100000_4wire_short_fast_v_result"] = "FAIL"
+
+            print(run["res_100000_4wire_short_fast_v"])
+            print(run["res_100000_4wire_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -4681,6 +4954,9 @@ class MegaOhm4Wire(QDialog):
             else:
                 run["res_1000000_4wire_short_slow_v_result"] = "FAIL"
 
+            print(run["res_1000000_4wire_short_slow_v"])
+            print(run["res_1000000_4wire_short_slow_v_result"])
+
             my_instrument.write("F4R5S1T0Y0B0?")
             my_instrument.read()
 
@@ -4692,6 +4968,9 @@ class MegaOhm4Wire(QDialog):
             else:
                 run["res_1000000_4wire_short_med_v_result"] = "FAIL"
 
+            print(run["res_1000000_4wire_short_med_v"])
+            print(run["res_1000000_4wire_short_med_v_result"])
+
             my_instrument.write("F4R5S2T0Y0B0?")
             my_instrument.read()
 
@@ -4702,6 +4981,9 @@ class MegaOhm4Wire(QDialog):
                 run["res_1000000_4wire_short_fast_v_result"] = "PASS"
             else:
                 run["res_1000000_4wire_short_fast_v_result"] = "FAIL"
+
+            print(run["res_1000000_4wire_short_fast_v"])
+            print(run["res_1000000_4wire_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -4776,6 +5058,9 @@ class TenMegaOhm4Wire(QDialog):
             else:
                 run["res_10000000_4wire_short_slow_v_result"] = "FAIL"
 
+            print(run["res_10000000_4wire_short_slow_v"])
+            print(run["res_10000000_4wire_short_slow_v_result"])
+
             my_instrument.write("F4R6S1T0Y0B0?")
             my_instrument.read()
 
@@ -4786,6 +5071,9 @@ class TenMegaOhm4Wire(QDialog):
                 run["res_10000000_4wire_short_med_v_result"] = "PASS"
             else:
                 run["res_10000000_4wire_short_med_v_result"] = "FAIL"
+
+            print(run["res_10000000_4wire_short_med_v"])
+            print(run["res_10000000_4wire_short_med_v_result"])
 
             my_instrument.write("F4R6S2T0Y0B0?")
             my_instrument.read()
@@ -4798,17 +5086,20 @@ class TenMegaOhm4Wire(QDialog):
             else:
                 run["res_10000000_4wire_short_fast_v_result"] = "FAIL"
 
+            print(run["res_10000000_4wire_short_fast_v"])
+            print(run["res_10000000_4wire_short_fast_v_result"])
+
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
 
-            self.close()
-            self.hundredOhm2Wire = HundredOhm2Wire()
-            self.hundredOhm2Wire.exec()
-
-        else:
-            self.close()
-            self.hundredOhm2Wire = HundredOhm2Wire()
-            self.hundredOhm2Wire.exec()
+            if allTests:
+                self.close()
+                self.hundredOhm2Wire = HundredOhm2Wire()
+                self.hundredOhm2Wire.exec()
+            elif fourWireConfig:
+                self.close()
+                self.testComplete = Completed()
+                self.testComplete.exec()
 
 class HundredOhm2Wire(QDialog):
     def __init__(self):
@@ -4820,6 +5111,19 @@ class HundredOhm2Wire(QDialog):
         self.contentLayout = QVBoxLayout()
 
         self.contentLayout.addStretch(1)
+
+
+        self.promptLabel = QLabel(
+            "Connect the HI and LO jacks of the calibrator output and Fluke 8840A input.\n"
+            "Ensure that the HI Sense and LO Sense jacks are disconnected.")
+        self.promptLabel.setStyleSheet("""
+                                            font-size: 18px
+                """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
 
 
         self.actionLabel = QLabel("Continue by supplying Fluke 8840A with 100 ohm output from provided calibrator.\n"
@@ -4862,13 +5166,16 @@ class HundredOhm2Wire(QDialog):
             my_instrument.write("F3R1S0T0Y0B0?")
             my_instrument.read()
 
-            self.res_100_100_reading = float(my_instrument.read().strip())
+            self.res_100_2wire_reading = float(my_instrument.read().strip())
 
             run["res_100_2wire_short_slow_v"] = self.res_100_2wire_reading
             if 99.985 <= self.res_100_2wire_reading <= 100.015:
                 run["res_100_2wire_short_slow_v_result"] = "PASS"
             else:
                 run["res_100_2wire_short_slow_v_result"] = "FAIL"
+
+            print(run["res_100_2wire_short_slow_v"])
+            print(run["res_100_2wire_short_slow_v_result"])
 
             my_instrument.write("F3R1S1T0Y0B0?")
             my_instrument.read()
@@ -4881,6 +5188,9 @@ class HundredOhm2Wire(QDialog):
             else:
                 run["res_100_2wire_short_med_v_result"] = "FAIL"
 
+            print(run["res_100_2wire_short_med_v"])
+            print(run["res_100_2wire_short_med_v_result"])
+
             my_instrument.write("F3R1S2T0Y0B0?")
             my_instrument.read()
 
@@ -4891,6 +5201,9 @@ class HundredOhm2Wire(QDialog):
                 run["res_100_2wire_short_fast_v_result"] = "PASS"
             else:
                 run["res_100_2wire_short_fast_v_result"] = "FAIL"
+
+            print(run["res_100_2wire_short_fast_v"])
+            print(run["res_100_2wire_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -4964,6 +5277,9 @@ class ThousandOhm2Wire(QDialog):
             else:
                 run["res_1000_2wire_short_slow_v_result"] = "FAIL"
 
+            print(run["res_1000_2wire_short_slow_v"])
+            print(run["res_1000_2wire_short_slow_v_result"])
+
             my_instrument.write("F3R2S1T0Y0B0?")
             my_instrument.read()
 
@@ -4974,6 +5290,9 @@ class ThousandOhm2Wire(QDialog):
                 run["res_1000_2wire_short_med_v_result"] = "PASS"
             else:
                 run["res_1000_2wire_short_med_v_result"] = "FAIL"
+
+            print(run["res_1000_2wire_short_med_v"])
+            print(run["res_1000_2wire_short_med_v_result"])
 
             my_instrument.write("F3R2S2T0Y0B0?")
             my_instrument.read()
@@ -4986,17 +5305,23 @@ class ThousandOhm2Wire(QDialog):
             else:
                 run["res_1000_2wire_short_fast_v_result"] = "FAIL"
 
+            print(run["res_1000_2wire_short_fast_v"])
+            print(run["res_1000_2wire_short_fast_v_result"])
+
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
 
-            self.close()
-            self.tenThousandOhm2Wire = TenThousandOhm2Wire()
-            self.tenThousandOhm2Wire.exec()
+            if allTests:
+                self.close()
+                self.tenThousandOhm2Wire = TenThousandOhm2Wire()
+                self.tenThousandOhm2Wire.exec()
 
-        else:
-            self.close()
-            self.tenThousandOhm = TenThousandOhm()
-            self.tenThousandOhm.exec()
+            elif twoWireConfig:
+                self.close()
+                self.tenThousandOhm2Wire = TenThousandOhm2Wire()
+                self.tenThousandOhm2Wire.exec()
+
+
 
 class TenThousandOhm2Wire(QDialog):
     def __init__(self):
@@ -5047,7 +5372,7 @@ class TenThousandOhm2Wire(QDialog):
 
             # --------------------------------------------------- +100 mv range
 
-            my_instrument.write("F3R1S0T0Y0B0?")
+            my_instrument.write("F3R3S0T0Y0B0?")
             my_instrument.read()
 
             self.res_10000_2wire_reading = float(my_instrument.read().strip())
@@ -5057,6 +5382,9 @@ class TenThousandOhm2Wire(QDialog):
                 run["res_10000_2wire_short_slow_v_result"] = "PASS"
             else:
                 run["res_10000_2wire_short_slow_v_result"] = "FAIL"
+
+            print(run["res_10000_2wire_short_slow_v"])
+            print(run["res_10000_2wire_short_slow_v_result"])
 
             my_instrument.write("F3R3S1T0Y0B0?")
             my_instrument.read()
@@ -5069,6 +5397,9 @@ class TenThousandOhm2Wire(QDialog):
             else:
                 run["res_10000_2wire_short_med_v_result"] = "FAIL"
 
+            print(run["res_10000_2wire_short_med_v"])
+            print(run["res_10000_2wire_short_med_v_result"])
+
             my_instrument.write("F3R3S2T0Y0B0?")
             my_instrument.read()
 
@@ -5079,6 +5410,9 @@ class TenThousandOhm2Wire(QDialog):
                 run["res_10000_2wire_short_fast_v_result"] = "PASS"
             else:
                 run["res_10000_2wire_short_fast_v_result"] = "FAIL"
+
+            print(run["res_10000_2wire_short_fast_v"])
+            print(run["res_10000_2wire_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -5152,22 +5486,8 @@ class HundredThousandOhm2Wire(QDialog):
             else:
                 run["res_100000_2wire_short_slow_v_result"] = "FAIL"
 
-            my_instrument.write("F3R4S0T0Y0B0?")
-            my_instrument.read()
-
-            my_instrument.write("F3R4S0T0Y0B0?")
-            my_instrument.read()
-
-            self.res_100000_2wire_reading = float(my_instrument.read().strip())
-
-            run["res_100000_2wire_short_slow_v"] = self.res_100000_2wire_reading
-            if 99985.0 <= self.res_100000_2wire_reading <= 100015.0:
-                run["res_100000_2wire_short_slow_v_result"] = "PASS"
-            else:
-                run["res_100000_2wire_short_slow_v_result"] = "FAIL"
-
-            my_instrument.write("F3R4S0T0Y0B0?")
-            my_instrument.read()
+            print(run["res_100000_2wire_short_slow_v"])
+            print(run["res_100000_2wire_short_slow_v_result"])
 
             my_instrument.write("F3R4S0T0Y0B0?")
             my_instrument.read()
@@ -5175,10 +5495,28 @@ class HundredThousandOhm2Wire(QDialog):
             self.res_100000_2wire_reading = float(my_instrument.read().strip())
 
             run["res_100000_2wire_short_med_v"] = self.res_100000_2wire_reading
-            if 99970.0 <= self.res_100000_2wire_reading <= 100030.0:
+            if 99985.0 <= self.res_100000_2wire_reading <= 100015.0:
                 run["res_100000_2wire_short_med_v_result"] = "PASS"
             else:
                 run["res_100000_2wire_short_med_v_result"] = "FAIL"
+
+            print(run["res_100000_2wire_short_med_v"])
+            print(run["res_100000_2wire_short_med_v_result"])
+
+            my_instrument.write("F3R4S0T0Y0B0?")
+            my_instrument.read()
+
+
+            self.res_100000_2wire_reading = float(my_instrument.read().strip())
+
+            run["res_100000_2wire_short_fast_v"] = self.res_100000_2wire_reading
+            if 99970.0 <= self.res_100000_2wire_reading <= 100030.0:
+                run["res_100000_2wire_short_fast_v_result"] = "PASS"
+            else:
+                run["res_100000_2wire_short_fast_v_result"] = "FAIL"
+
+            print(run["res_100000_2wire_short_fast_v"])
+            print(run["res_100000_2wire_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -5253,6 +5591,9 @@ class MegaOhm2Wire(QDialog):
             else:
                 run["res_1000000_2wire_short_slow_v_result"] = "FAIL"
 
+            print(run["res_1000000_2wire_short_slow_v"])
+            print(run["res_1000000_2wire_short_slow_v_result"])
+
             my_instrument.write("F3R5S1T0Y0B0?")
             my_instrument.read()
 
@@ -5264,6 +5605,9 @@ class MegaOhm2Wire(QDialog):
             else:
                 run["res_1000000_2wire_short_med_v_result"] = "FAIL"
 
+            print(run["res_1000000_2wire_short_med_v"])
+            print(run["res_1000000_2wire_short_med_v_result"])
+
             my_instrument.write("F3R5S2T0Y0B0?")
             my_instrument.read()
 
@@ -5274,6 +5618,9 @@ class MegaOhm2Wire(QDialog):
                 run["res_1000000_2wire_short_fast_v_result"] = "PASS"
             else:
                 run["res_1000000_2wire_short_fast_v_result"] = "FAIL"
+
+            print(run["res_1000000_2wire_short_fast_v"])
+            print(run["res_1000000_2wire_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -5348,6 +5695,9 @@ class TenMegaOhm2Wire(QDialog):
             else:
                 run["res_10000000_2wire_short_slow_v_result"] = "FAIL"
 
+            print(run["res_10000000_2wire_short_slow_v"])
+            print(run["res_10000000_2wire_short_slow_v_result"])
+
             my_instrument.write("F3R6S1T0Y0B0?")
             my_instrument.read()
 
@@ -5358,6 +5708,9 @@ class TenMegaOhm2Wire(QDialog):
                 run["res_10000000_2wire_short_med_v_result"] = "PASS"
             else:
                 run["res_10000000_2wire_short_med_v_result"] = "FAIL"
+
+            print(run["res_10000000_2wire_short_med_v"])
+            print(run["res_10000000_2wire_short_med_v_result"])
 
             my_instrument.write("F3R6S2T0Y0B0?")
             my_instrument.read()
@@ -5370,17 +5723,21 @@ class TenMegaOhm2Wire(QDialog):
             else:
                 run["res_10000000_2wire_short_fast_v_result"] = "FAIL"
 
+            print(run["res_10000000_2wire_short_fast_v"])
+            print(run["res_10000000_2wire_short_fast_v_result"])
+
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
 
-            self.close()
-            self.dcCurrent0 = DCCurrent0()
-            self.dcCurrent0.exec()
+            if allTests:
+                self.close()
+                self.dcCurrent0 = DCCurrent0()
+                self.dcCurrent0.exec()
+            elif twoWireConfig:
+                self.close()
+                self.testComplete = Completed()
+                self.testComplete.exec()
 
-        else:
-            self.close()
-            self.dcCurrent0 = DCCurrent0()
-            self.dcCurrent0.exec()
 
 
 class DCCurrent0(QDialog):
@@ -5454,6 +5811,9 @@ class DCCurrent0(QDialog):
             else:
                 run["dc_current_0_short_slow_v_result"] = "FAIL"
 
+            print(run["dc_current_0_short_slow_v"])
+            print(run["dc_current_0_short_slow_v_result"])
+
             my_instrument.write("F5R5D1S1T0Y0B0")
             my_instrument.read()
 
@@ -5465,6 +5825,9 @@ class DCCurrent0(QDialog):
             else:
                 run["dc_current_0_short_med_v_result"] = "FAIL"
 
+            print(run["dc_current_0_short_med_v"])
+            print(run["dc_current_0_short_med_v_result"])
+
             my_instrument.write("F5R5D1S2T0Y0B0")
             my_instrument.read()
 
@@ -5475,6 +5838,9 @@ class DCCurrent0(QDialog):
                 run["dc_current_0_short_fast_v_result"] = "PASS"
             else:
                 run["dc_current_0_short_fast_v_result"] = "FAIL"
+
+            print(run["dc_current_0_short_fast_v"])
+            print(run["dc_current_0_short_fast_v_result"])
 
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
@@ -5550,6 +5916,9 @@ class DCCurrent1(QDialog):
             else:
                 run["dc_current_1_short_slow_v_result"] = "FAIL"
 
+            print(run["dc_current_1_short_slow_v"])
+            print(run["dc_current_1_short_slow_v_result"])
+
             my_instrument.write("F5R5D1S1T0Y0B0")
             my_instrument.read()
 
@@ -5560,6 +5929,9 @@ class DCCurrent1(QDialog):
                 run["dc_current_1_short_med_v_result"] = "PASS"
             else:
                 run["dc_current_1_short_med_v_result"] = "FAIL"
+
+            print(run["dc_current_1_short_med_v"])
+            print(run["dc_current_1_short_med_v_result"])
 
             my_instrument.write("F5R5D1S2T0Y0B0")
             my_instrument.read()
@@ -5572,113 +5944,25 @@ class DCCurrent1(QDialog):
             else:
                 run["dc_current_1_short_fast_v_result"] = "FAIL"
 
+            print(run["dc_current_1_short_fast_v"])
+            print(run["dc_current_1_short_fast_v_result"])
+
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
 
-            self.close()
-            self.acCurrent19 = ACCurrent19()
-            self.acCurrent19.exec()
+            if allTests:
+                self.close()
+                self.acCurrent19 = ACCurrent19()
+                self.acCurrent19.exec()
+            elif dcCurrentConfig:
+                self.close()
+                self.testComplete = Completed()
+                self.testComplete.exec()
 
-        else:
-            self.close()
-            self.acCurrent19 = ACCurrent19()
-            self.acCurrent19.exec()
 
 #---------------------------------------------------------- Implement Branch Selection here
 
-class ACCurrent19(QDialog):
-    def __init__(self):
-        super().__init__()
 
-        self.windowTitle = "AC Current 1.9 A Verification"
-        self.setFixedSize(800, 300)
-
-        self.contentLayout = QVBoxLayout()
-
-        self.contentLayout.addStretch(1)
-
-
-        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with 1.9 A output at 1 kHz from provided calibrator.\n"
-                                  "After enabling output, select 'Measure' to collect data.")
-        self.actionLabel.setStyleSheet("""
-                                            font-size: 18px;
-                                            font-weight: bold;
-                """)
-        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.contentLayout.addWidget(self.actionLabel)
-
-        self.buttonSpacer = QSpacerItem(0, 40)
-        self.contentLayout.addItem(self.buttonSpacer)
-
-        self.buttonLayout = QHBoxLayout()
-        self.contentLayout.addLayout(self.buttonLayout)
-
-        self.buttonLayout.addStretch(1)
-
-        self.measureButton = QPushButton("Measure")
-        self.measureButton.setFixedWidth(75)
-        self.measureButton.setFixedHeight(50)
-        self.measureButton.setStyleSheet(""
-                                         "background-color: rgb(0, 200, 50);"
-                                         "color: rgb(255, 255, 255);")
-        self.measureButton.clicked.connect(self.MeasureButtonClicked)
-        self.buttonLayout.addWidget(self.measureButton)
-
-        self.buttonLayout.addStretch(1)
-
-        self.contentLayout.addStretch(1)
-
-        self.setLayout(self.contentLayout)
-
-    def MeasureButtonClicked(self):
-        if USE_INSTRUMENT:
-
-            # --------------------------------------------------- +100 mv range
-
-            my_instrument.write("F6R5D1S0T0Y0B0")
-            my_instrument.read()
-
-            self.ac_current_19_reading = float(my_instrument.read().strip())
-
-            run["ac_current_19_short_slow_v"] = self.ac_current_19_reading
-            if 1.89040 <= self.ac_current_19_reading <= 1.90960:
-                run["ac_current_19_short_slow_v_result"] = "PASS"
-            else:
-                run["ac_current_19_short_slow_v_result"] = "FAIL"
-
-            my_instrument.write("F6R5D1S1T0Y0B0")
-            my_instrument.read()
-
-            self.ac_current_19_reading = float(my_instrument.read().strip())
-
-            run["ac_current_19_short_med_v"] = self.ac_current_19_reading
-            if 1.89040 <= self.ac_current_19_reading <= 1.90960:
-                run["ac_current_19_short_med_v_result"] = "PASS"
-            else:
-                run["ac_current_19_short_med_v_result"] = "FAIL"
-
-            my_instrument.write("F6R5D1S2T0Y0B0")
-            my_instrument.read()
-
-            self.ac_current_19_reading = float(my_instrument.read().strip())
-
-            run["ac_current_19_short_fast_v"] = self.ac_current_19_reading
-            if 1.89040 <= self.ac_current_19_reading <= 1.90960:
-                run["ac_current_19_short_fast_v_result"] = "PASS"
-            else:
-                run["ac_current_19_short_fast_v_result"] = "FAIL"
-
-            my_instrument.write("F1R1S0T0Y0B0?")
-            my_instrument.read()
-
-            self.close()
-            self.acCurrent0 = ACCurrent0()
-            self.acCurrent0,exec()
-
-        else:
-            self.close()
-            self.acCurrent0 = ACCurrent0()
-            self.acCurrent0, exec()
 
 class ACCurrent0(QDialog):
     def __init__(self):
@@ -5740,6 +6024,9 @@ class ACCurrent0(QDialog):
             else:
                 run["ac_current_0_short_slow_v_result"] = "FAIL"
 
+            print(run["ac_current_0_short_slow_v"])
+            print(run["ac_current_0_short_slow_v_result"])
+
             my_instrument.write("F6R5D1S1T0Y0B0")
             my_instrument.read()
 
@@ -5750,6 +6037,9 @@ class ACCurrent0(QDialog):
                 run["ac_current_0_short_med_v_result"] = "PASS"
             else:
                 run["ac_current_0_short_med_v_result"] = "FAIL"
+
+            print(run["ac_current_0_short_med_v"])
+            print(run["ac_current_0_short_med_v_result"])
 
             my_instrument.write("F6R5D1S2T0Y0B0")
             my_instrument.read()
@@ -5762,17 +6052,151 @@ class ACCurrent0(QDialog):
             else:
                 run["ac_current_0_short_fast_v_result"] = "FAIL"
 
+            print(run["ac_current_0_short_fast_v"])
+            print(run["ac_current_0_short_fast_v_result"])
+
+            my_instrument.write("F1R1S0T0Y0B0?")
+            my_instrument.read()
+
+            if allTests:
+                self.close()
+                self.acCurrent19 = ACCurrent19()
+                self.acCurrent19.exec()
+
+            elif acCurrentConfig:
+                self.close()
+                self.acCurrent19 = ACCurrent19()
+                self.acCurrent19.exec()
+
+class ACCurrent19(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "AC Current 1.9 A Verification"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+
+        self.actionLabel = QLabel("Continue by supplying Fluke 8840A with 1.9 A output at 1 kHz from provided calibrator.\n"
+                                  "After enabling output, select 'Measure' to collect data.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Measure")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("F6R5D1S0T0Y0B0")
+            my_instrument.read()
+
+            self.ac_current_19_reading = float(my_instrument.read().strip())
+
+            run["ac_current_19_short_slow_v"] = self.ac_current_19_reading
+            if 1.89040 <= self.ac_current_19_reading <= 1.90960:
+                run["ac_current_19_short_slow_v_result"] = "PASS"
+            else:
+                run["ac_current_19_short_slow_v_result"] = "FAIL"
+
+            print(run["ac_current_19_short_slow_v"])
+            print(run["ac_current_19_short_slow_v_result"])
+
+            my_instrument.write("F6R5D1S1T0Y0B0")
+            my_instrument.read()
+
+            self.ac_current_19_reading = float(my_instrument.read().strip())
+
+            run["ac_current_19_short_med_v"] = self.ac_current_19_reading
+            if 1.89040 <= self.ac_current_19_reading <= 1.90960:
+                run["ac_current_19_short_med_v_result"] = "PASS"
+            else:
+                run["ac_current_19_short_med_v_result"] = "FAIL"
+
+            print(run["ac_current_19_short_med_v"])
+            print(run["ac_current_19_short_med_v_result"])
+
+            my_instrument.write("F6R5D1S2T0Y0B0")
+            my_instrument.read()
+
+            self.ac_current_19_reading = float(my_instrument.read().strip())
+
+            run["ac_current_19_short_fast_v"] = self.ac_current_19_reading
+            if 1.89040 <= self.ac_current_19_reading <= 1.90960:
+                run["ac_current_19_short_fast_v_result"] = "PASS"
+            else:
+                run["ac_current_19_short_fast_v_result"] = "FAIL"
+
+            print(run["ac_current_19_short_fast_v"])
+            print(run["ac_current_19_short_fast_v_result"])
+
             my_instrument.write("F1R1S0T0Y0B0?")
             my_instrument.read()
 
             self.close()
-            self.hundred45mVAC = Hundred45mVAC()
-            self.hundred45mVAC.exec()
+            self.testComplete = Completed()
+            self.testComplete.exec()
 
         else:
             self.close()
-            self.hundred45mVAC = Hundred45mVAC()
-            self.hundred45mVAC.exec()
+            self.testComplete = Completed()
+            self.testComplete.exec()
+
+
+
+class Completed(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "Temp Test Complete Route"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.actionLabel = QLabel(
+            "HOOORAYYYYYYYYYYYYYYYYYYYYYYYYYY!")
+        self.actionLabel.setStyleSheet("""
+                                                    font-size: 18px;
+                                                    font-weight: bold;
+                        """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+
+        self.setLayout(self.contentLayout)
+
+
 
 
 

@@ -19,6 +19,7 @@ twoWire = False
 fourWire = False
 dcCurrent = False
 acCurrent = False
+acHFCurrent = False
 
 if USE_INSTRUMENT:
     rm = pyvisa.ResourceManager()
@@ -41,7 +42,8 @@ class FlukeCalibration(QDialog):
 
 
 
-        self.serial = ""
+        self.serial = run["serial"]
+        self.date = run["date"]
         self.param1 = ""
         self.param2 = ""
         self.param3 = ""
@@ -80,7 +82,7 @@ class FlukeCalibration(QDialog):
 
         self.procedureLayout = QHBoxLayout()
         self.contentLayout.addLayout(self.procedureLayout)
-        self.procedureLayout.addStretch(1)
+        #self.procedureLayout.addStretch(1)
 
         self.procedureSelectionLabel = QLabel("Select Procedure:")
         self.procedureSelectionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -93,35 +95,53 @@ class FlukeCalibration(QDialog):
         self.allTests.setChecked(True)
         self.procedureButtonsLayout.addWidget(self.allTests)
 
+        self.procedureButtonsLayout.addStretch(1)
+
         self.adCalibration = QRadioButton("A/D Calibration")
         self.adCalibration.setChecked(False)
         self.procedureButtonsLayout.addWidget(self.adCalibration)
+
 
         self.dcCalibration = QRadioButton("DC Voltage Calibration")
         self.dcCalibration.setChecked(False)
         self.procedureButtonsLayout.addWidget(self.dcCalibration)
 
+
+
         self.acCalibration = QRadioButton("AC Voltage Calibration")
         self.acCalibration.setChecked(False)
         self.procedureButtonsLayout.addWidget(self.acCalibration)
+
+
 
         self.twoWire = QRadioButton("Two Wire Resistance Calibration")
         self.twoWire.setChecked(False)
         self.procedureButtonsLayout.addWidget(self.twoWire)
 
+
         self.fourWire = QRadioButton("Four Wire Resistance Calibration")
         self.fourWire.setChecked(False)
         self.procedureButtonsLayout.addWidget(self.fourWire)
+
+
 
         self.dcCurrent = QRadioButton("DC Current Calibration")
         self.dcCurrent.setChecked(False)
         self.procedureButtonsLayout.addWidget(self.dcCurrent)
 
+
+
         self.acCurrent = QRadioButton("AC Current Calibration")
         self.acCurrent.setChecked(False)
         self.procedureButtonsLayout.addWidget(self.acCurrent)
 
-        self.procedureLayout.addStretch(1)
+
+
+        self.acHFCurrent = QRadioButton("AC HF Current Calibration")
+        self.acHFCurrent.setChecked(False)
+        self.procedureButtonsLayout.addWidget(self.acHFCurrent)
+
+        #self.procedureLayout.addStretch(1)
 
         self.buttonSpacer = QSpacerItem(0, 100)
         self.contentLayout.addItem(self.buttonSpacer)
@@ -192,8 +212,11 @@ class FlukeCalibration(QDialog):
                 self.acCurrent = Initialization()
                 self.acCurrent.exec()
 
-
-
+            if self.acHFCurrent.isChecked():
+                global acHFCurrent
+                acHFCurrent = True
+                self.acHFCurrent = Initialization()
+                self.acHFCurrent.exec()
 
         except Exception as e:
             print(f"Error: {e}")
@@ -348,6 +371,10 @@ class Initialization(QDialog):
             if acCurrent:
                 self.acCurrent = ACCurrent()
                 self.acCurrent.exec()
+            if acHFCurrent:
+                self.acHFCurrent = ACHFCurrent()
+                self.acHFCurrent.exec()
+
         except Exception as e:
             print(f"error: {e}")
 
@@ -3637,7 +3664,7 @@ class DCCurrent(QDialog):
 
         self.contentLayout.addStretch(1)
 
-        self.promptLabel = QLabel("Connect HI and LO input jacks of the Fluke 8840A to the provided calibrator.")
+        self.promptLabel = QLabel("Disconnect the Fluke 8840A from the provided Calibrator and leave the inputs open.")
         self.promptLabel.setStyleSheet("""
                                     font-size: 18px
         """)
@@ -3690,17 +3717,168 @@ class DCCurrent(QDialog):
             self.calStatus = float(my_instrument.read().strip())
 
             print(float(self.calStatus))
-"""
-        if self.calStatus == 0.00:
-            self.close()
-            self.adCalibration = ADCalibration()
-            self.adCalibration.exec()
 
-        else:
-            self.close()
-            self.error = Error()
-            self.error.exec()
-"""
+            if allTests:
+                self.close()
+                self.dcZeroA = DCZeroA()
+                self.dcZeroA.exec()
+
+
+
+class DCZeroA(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "DC Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Leave the inputs of the Fluke 8840A to provide an open input.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Select Store Point to provide requested 0 A input.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Store Point")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C0")
+            time.sleep(10)
+
+            self.calStatus = my_instrument.query("G2")
+            print(float(self.calStatus))
+
+            if float(self.calStatus) == 0.0:
+                if allTests:
+                    self.close()
+                    self.dcThousandMA = DCThousandMA()
+                    self.dcThousandMA.exec()
+                elif dcCurrent:
+                    self.close()
+                    self.dcThousandMA = DCThousandMA()
+                    self.dcThousandMA.exec()
+            else:
+                self.close()
+                self.error = Error()
+                self.error.exec()
+
+class DCThousandMA(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "DC Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Connect the HI and LO jacks of the Fluke 8840A to the provided Calibrator and\n"
+                                  "supply 1 A. ")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Select Store Point to provide requested 1 A input.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Store Point")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C0")
+            time.sleep(10)
+
+            self.calStatus = my_instrument.query("G2")
+            print(float(self.calStatus))
+
+            if float(self.calStatus) == 1.0:
+                if allTests:
+                    self.close()
+                    self.acCurrent = ACCurrent()
+                    self.acCurrent.exec()
+                elif dcCurrent:
+                    self.close()
+                    self.complete = Complete()
+                    self.complete.exec()
+            else:
+                self.close()
+                self.error = Error()
+                self.error.exec()
 
 class ACCurrent(QDialog):
     def __init__(self):
@@ -3760,23 +3938,605 @@ class ACCurrent(QDialog):
 
             my_instrument.write("F6")
 
-            my_instrument.write("G2?")
-            my_instrument.read()
 
-            self.calStatus = float(my_instrument.read().strip())
+            self.close()
+            self.acHundredMA = ACHundredMV()
+            self.acHundredMA.exec()
 
+class ACHundredMV(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "AC Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Provide the Fluke 8840A with 100 mV AC at 1 KHz.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Select Store Point to provide requested 100 mV input.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Store Point")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C0")
+            time.sleep(10)
+
+            self.calStatus = my_instrument.query("G2")
             print(float(self.calStatus))
-"""
-        if self.calStatus == 0.00:
-            self.close()
-            self.adCalibration = ADCalibration()
-            self.adCalibration.exec()
 
-        else:
+            if float(self.calStatus) == 1.0:
+                if allTests:
+                    self.close()
+                    self.acThousandMV = ACThousandMV()
+                    self.acThousandMV.exec()
+                elif dcCurrent:
+                    self.close()
+                    self.acThousandMV = ACThousandMV()
+                    self.acThousandMV.exec()
+            else:
+                self.close()
+                self.error = Error()
+                self.error.exec()
+
+class ACThousandMV(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "AC Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Provide the Fluke 8840A with 1.0 V AC at 1 KHz.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Select Store Point to provide requested 1.0 V input.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Store Point")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C0")
+            time.sleep(10)
+
+
+            if allTests:
+                self.close()
+                self.acThousandMV = ACThousandMV()
+                self.acThousandMV.exec()
+            elif dcCurrent:
+                self.close()
+                self.complete = Complete()
+                self.complete.exec()
+            else:
+                self.close()
+                self.error = Error()
+                self.error.exec()
+
+
+class ACHFCurrent(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "AC HF Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Connect HI and LO input jacks of the Fluke 8840A to the provided calibrator.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Press continue to begin AC HF Current Calibration procedures.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.restartButton = QPushButton("Continue")
+        self.restartButton.setFixedWidth(75)
+        self.restartButton.setFixedHeight(50)
+        self.restartButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.restartButton.clicked.connect(self.RestartButtonClicked)
+        self.buttonLayout.addWidget(self.restartButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def RestartButtonClicked(self):
+        if USE_INSTRUMENT:
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C2")
+
             self.close()
-            self.error = Error()
-            self.error.exec()
-"""
+            self.acHFHundredMV = ACHFHundredMV()
+            self.acHFHundredMV.exec()
+
+class ACHFHundredMV(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "AC HF Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Provide the Fluke 8840A with 100 mV AC at 100 KHz.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Select Store Point to provide requested 100 mV input.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Store Point")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C0")
+            time.sleep(10)
+
+            self.calStatus = my_instrument.query("G2")
+            print(float(self.calStatus))
+
+            if float(self.calStatus) == 1.0:
+                if allTests:
+                    self.close()
+                    self.acHFThousandMV = ACHFThousandMV()
+                    self.acHFThousandMV.exec()
+                elif dcCurrent:
+                    self.close()
+                    self.acHFThousandMV = ACHFThousandMV()
+                    self.acHFThousandMV.exec()
+            else:
+                self.close()
+                self.error = Error()
+                self.error.exec()
+
+class ACHFThousandMV(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "AC Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Provide the Fluke 8840A with 1 V AC at 100 KHz.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Select Store Point to provide requested 1 V input.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Store Point")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C0")
+            time.sleep(10)
+
+            self.calStatus = my_instrument.query("G2")
+            print(float(self.calStatus))
+
+            if float(self.calStatus) == 10.0:
+                if allTests:
+                    self.close()
+                    self.acHFTen = ACHFTenV()
+                    self.acHFTen.exec()
+                elif dcCurrent:
+                    self.close()
+                    self.acHFTen = ACHFTenV()
+                    self.acHFTen.exec()
+            else:
+                self.close()
+                self.error = Error()
+                self.error.exec()
+
+class ACHFTenV(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "AC Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Provide the Fluke 8840A with 10 V AC at 100 KHz.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Select Store Point to provide requested 1 V input.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Store Point")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C0")
+            time.sleep(10)
+
+            self.calStatus = my_instrument.query("G2")
+            print(float(self.calStatus))
+
+            if float(self.calStatus) == 100.0:
+                if allTests:
+                    self.close()
+                    self.acHFHundred = ACHFHundredV()
+                    self.acHFHundred.exec()
+                elif dcCurrent:
+                    self.close()
+                    self.acHFHundred = ACHFHundredV()
+                    self.acHFHundred.exec()
+            else:
+                self.close()
+                self.error = Error()
+                self.error.exec()
+
+class ACHFHundredV(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "AC Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Provide the Fluke 8840A with 100 V AC at 100 KHz.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Select Store Point to provide requested 100 V input.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Store Point")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C0")
+            time.sleep(10)
+
+            self.calStatus = my_instrument.query("G2")
+            print(float(self.calStatus))
+
+            if float(self.calStatus) == 200.0:
+                if allTests:
+                    self.close()
+                    self.acHFTwoHundred = ACHFTwoHundred()
+                    self.acHFTwoHundred.exec()
+                elif dcCurrent:
+                    self.close()
+                    self.acHFTwoHundred = ACHFTwoHundred()
+                    self.acHFTwoHundred.exec()
+            else:
+                self.close()
+                self.error = Error()
+                self.error.exec()
+
+class ACHFTwoHundred(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.windowTitle = "AC Current Calibration"
+        self.setFixedSize(800, 300)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.contentLayout.addStretch(1)
+
+        self.promptLabel = QLabel("Provide the Fluke 8840A with 200 V AC at 100 KHz.")
+        self.promptLabel.setStyleSheet("""
+                                    font-size: 18px
+        """)
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.promptLabel)
+
+        self.textSpacer = QSpacerItem(0, 30)
+        self.contentLayout.addItem(self.textSpacer)
+
+        self.actionLabel = QLabel("Select Store Point to provide requested 200 V input.")
+        self.actionLabel.setStyleSheet("""
+                                            font-size: 18px;
+                                            font-weight: bold;
+                """)
+        self.actionLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.contentLayout.addWidget(self.actionLabel)
+
+        self.buttonSpacer = QSpacerItem(0, 40)
+        self.contentLayout.addItem(self.buttonSpacer)
+
+        self.buttonLayout = QHBoxLayout()
+        self.contentLayout.addLayout(self.buttonLayout)
+
+        self.buttonLayout.addStretch(1)
+
+        self.measureButton = QPushButton("Store Point")
+        self.measureButton.setFixedWidth(75)
+        self.measureButton.setFixedHeight(50)
+        self.measureButton.setStyleSheet(""
+                                         "background-color: rgb(0, 200, 50);"
+                                         "color: rgb(255, 255, 255);")
+        self.measureButton.clicked.connect(self.MeasureButtonClicked)
+        self.buttonLayout.addWidget(self.measureButton)
+
+        self.buttonLayout.addStretch(1)
+
+        self.contentLayout.addStretch(1)
+
+        self.setLayout(self.contentLayout)
+
+    def MeasureButtonClicked(self):
+        if USE_INSTRUMENT:
+
+            # --------------------------------------------------- +100 mv range
+
+            my_instrument.write("C0")
+            time.sleep(10)
+
+            if allTests:
+                self.close()
+                self.complete = Complete()
+                self.complete.exec()
+            elif dcCurrent:
+                self.close()
+                self.complete = Complete()
+                self.complete.exec()
+            else:
+                self.close()
+                self.error = Error()
+                self.error.exec()
 
 
 class Error(QDialog):
